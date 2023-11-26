@@ -97,7 +97,8 @@ impl IMarker3D for VirtualCamera3D {
         if let Some(mut tree) = self.base.get_tree() {
             if self.push_on_ready {
                 if let Some(brain_tree) = tree.get_first_node_in_group(CAMERA_BRAIN_GROUP.into()) {
-                    if let Some(mut brain) = brain_tree.try_cast() as Option<Gd<CameraBrain3D>> {
+                    let option_temp: Option<Gd<CameraBrain3D>> = brain_tree.try_cast();
+                    if let Some(mut brain) = option_temp {
                         let self_gd: Gd<Self> = self.base.clone().cast();
                         brain.bind_mut().push_cam(self_gd);
                     }
