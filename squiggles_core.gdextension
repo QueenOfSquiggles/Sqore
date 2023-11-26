@@ -1,0 +1,35 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+
+[libraries]
+linux.debug.x86_64 =     "res://squiggles_core/target/debug/libsquiggles_core.so"
+windows.debug.x86_64 =   "res://squiggles_core/target/debug/squiggles_core.dll"
+macos.debug =            "res://squiggles_core/target/debug/libsquiggles_core.dylib"
+macos.debug.arm64 =      "res://squiggles_core/target/debug/libsquiggles_core.dylib"
+
+linux.release.x86_64 =   "res://squiggles_core/target/release/libsquiggles_core.so"
+windows.release.x86_64 = "res://squiggles_core/target/release/squiggles_core.dll"
+macos.release =          "res://squiggles_core/target/release/libsquiggles_core.dylib"
+macos.release.arm64 =    "res://squiggles_core/target/release/libsquiggles_core.dylib"
+
+[icons]
+
+; camera.rs
+
+CameraBrain3D = "res://squiggles_core/assets/icons/camera_brain.svg"
+VirtualCamera3D = "res://squiggles_core/assets/icons/virtual_camera.svg"
+
+; interaction.rs
+
+InteractRaycast3D = "res://squiggles_core/assets/icons/interaction_raycast3d.svg"
+InteractArea3D = "res://squiggles_core/assets/icons/interaction_area3d.svg"
+InteractionObjectArea3D = "res://squiggles_core/assets/icons/interact_object_area3d.svg"
+InteractionObjectStaticBody3D = "res://squiggles_core/assets/icons/interact_object_static3d.svg"
+InteractionObjectCharacterBody3D = "res://squiggles_core/assets/icons/interact_object_character3d.svg"
+
+; state_machine.rs
+
+FiniteStateMachine = "res://squiggles_core/assets/icons/fsm.svg"
+FiniteState = "res://squiggles_core/assets/icons/fsm_state.svg"
+FiniteSubStateMachine = "res://squiggles_core/assets/icons/fsm_sub_state.svg"
