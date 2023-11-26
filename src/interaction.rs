@@ -83,18 +83,24 @@ impl IRayCast3D for InteractRaycast3D {
                 }
                 if in_group && coll3d.has_method(METHOD_INTERACT.clone()) {
                     // valid object for interaction
+                    let mut has_changed = false;
                     if let Some(mut prev) = self.target.clone() {
                         if !prev.eq(&coll3d) {
                             if prev.has_method(METHOD_DESELECT.clone()) {
                                 prev.call(METHOD_DESELECT.clone(), &[]);
                             }
-                            if coll3d.has_method(METHOD_SELECT.clone()) {
-                                coll3d.call(METHOD_SELECT.clone(), &[]);
-                            }
-                            self.target = Some(coll3d);
-                            self.base
-                                .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[true.to_variant()]);
+                            has_changed = true;
                         }
+                    } else {
+                        has_changed = true;
+                    }
+                    if has_changed {
+                        if coll3d.has_method(METHOD_SELECT.clone()) {
+                            coll3d.call(METHOD_SELECT.clone(), &[]);
+                        }
+                        self.target = Some(coll3d);
+                        self.base
+                            .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[true.to_variant()]);
                     }
                 }
             }
@@ -194,15 +200,24 @@ impl InteractionObjectArea3D {
 
     #[func]
     fn on_select(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
     }
 
@@ -230,15 +245,24 @@ impl InteractionObjectStaticBody3D {
 
     #[func]
     fn on_select(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
     }
 
@@ -266,15 +290,24 @@ impl InteractionObjectCharacterBody3D {
 
     #[func]
     fn on_select(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
         self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
     }
 
@@ -293,11 +326,33 @@ impl InteractionObjectCharacterBody3D {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use godot::{obj::UserClass, prelude::*};
+    // use super::*;
 
     #[test]
     fn test_raycast_detect() {
-        let ray = InteractRaycast3D::new_gd();
+        // Error thrown because this requires the godot engine for testing
+        // basically, testing requires a scene tree, which requires godot. So as a library we can't really test directly. Unless we want to test something that doesn't rely on Godot's engine stuff.
+        // - - - - - - -
+        // use godot::{
+        //     engine::{CollisionShape3D, SphereShape3D},
+        //     obj::UserClass,
+        // };
+        // let mut ray: Gd<InteractRaycast3D> = InteractRaycast3D::alloc_gd();
+        // let mut object = InteractionObjectArea3D::alloc_gd();
+        // ray.set_collide_with_bodies(true);
+        // ray.set_global_position(Vector3::new(0.0, 0.0, -1.0));
+        // ray.set_target_position(Vector3::new(0.0, 0.0, 5.0));
+        // object.set_global_position(Vector3::new(0.0, 0.0, 1.0));
+        // let mut obj_coll = CollisionShape3D::new_alloc();
+        // obj_coll.set_shape(SphereShape3D::new().upcast());
+        // object.add_child(obj_coll.upcast());
+
+        // let scene = SceneTree::new_alloc();
+        // if let Some(mut root) = scene.get_root() {
+        //     root.add_child(ray.clone().upcast());
+        //     root.add_child(object.clone().upcast());
+        //     ray.force_raycast_update();
+        //     assert_eq!(ray.is_colliding(), true);
+        // }
     }
 }
