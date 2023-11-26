@@ -13,16 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-
-      - uses: actions-rs/cargo@v1.0.1
-        with:
-          command: check
-
-      - uses: actions-rs/cargo@v1.0.1
-        with:
-          command: test
-
+      - uses: actions/checkout@v4.1.1
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.0
+      - name: rust-cargo
+        uses: actions-rs/cargo@v1.0.1
+      - name: rust-check
+        run: cargo check --verbose
+      - name: rust-test
+        run: cargo test --verbose
+            
+            
