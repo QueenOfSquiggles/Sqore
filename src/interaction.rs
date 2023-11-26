@@ -72,8 +72,8 @@ impl InteractRaycast3D {
 impl IRayCast3D for InteractRaycast3D {
     fn physics_process(&mut self, _delta: f64) {
         if let Some(collider) = self.base.get_collider() {
-            let option_typed: Result<Gd<Node3D>, Gd<Object>> = collider.try_cast();
-            if let Ok(mut coll3d) = option_typed {
+            let mut option_typed: Result<Gd<Node3D>, Gd<Object>> = collider.try_cast();
+            if let Ok(coll3d) = option_typed.as_mut() {
                 let mut in_group = self.filter_groups.is_empty();
                 for g in self.filter_groups.as_slice() {
                     if coll3d.is_in_group(StringName::from(g)) {
@@ -84,7 +84,7 @@ impl IRayCast3D for InteractRaycast3D {
                 if in_group && coll3d.has_method(METHOD_INTERACT.clone()) {
                     // valid object for interaction
                     let mut has_changed = false;
-                    if let Some(mut prev) = self.target.clone() {
+                    if let Some(prev) = self.target.as_mut() {
                         if !prev.eq(&coll3d) {
                             if prev.has_method(METHOD_DESELECT.clone()) {
                                 prev.call(METHOD_DESELECT.clone(), &[]);
@@ -98,14 +98,14 @@ impl IRayCast3D for InteractRaycast3D {
                         if coll3d.has_method(METHOD_SELECT.clone()) {
                             coll3d.call(METHOD_SELECT.clone(), &[]);
                         }
-                        self.target = Some(coll3d);
+                        self.target = Some(coll3d.to_owned());
                         self.base
                             .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[true.to_variant()]);
                     }
                 }
             }
-        } else if let Some(mut prev) = self.target.clone() {
-            if prev.has_method(METHOD_DESELECT.clone()) {
+        } else if let Some(prev) = self.target.as_mut() {
+            if prev.is_instance_valid() && prev.has_method(METHOD_DESELECT.clone()) {
                 prev.call(METHOD_DESELECT.clone(), &[]);
             }
             self.target = None;
@@ -121,7 +121,7 @@ impl InteractArea3D {
     fn can_interact(is_able_to_interact: bool) {}
     #[func]
     fn do_interact(&mut self) {
-        if let Some(mut target) = self.target.clone() {
+        if let Some(target) = self.target.as_mut() {
             target.call(METHOD_INTERACT.clone(), &[]);
         }
     }
