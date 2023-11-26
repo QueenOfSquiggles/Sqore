@@ -72,7 +72,8 @@ impl InteractRaycast3D {
 impl IRayCast3D for InteractRaycast3D {
     fn physics_process(&mut self, _delta: f64) {
         if let Some(collider) = self.base.get_collider() {
-            if let Some(mut coll3d) = collider.try_cast() as Option<Gd<Node3D>> {
+            let option_typed: Option<Gd<Node3D>> = collider.try_cast();
+            if let Some(mut coll3d) = option_typed {
                 let mut in_group = self.filter_groups.is_empty();
                 for g in self.filter_groups.as_slice() {
                     if coll3d.is_in_group(StringName::from(g)) {
@@ -287,5 +288,16 @@ impl InteractionObjectCharacterBody3D {
     fn get_interact_name(&self) -> GString {
         warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
         GString::from("No name given")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use godot::{obj::UserClass, prelude::*};
+
+    #[test]
+    fn test_raycast_detect() {
+        let ray = InteractRaycast3D::new_gd();
     }
 }

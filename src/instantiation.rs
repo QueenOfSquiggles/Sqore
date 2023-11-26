@@ -29,12 +29,10 @@ impl IMarker3D for DelayedInstance {
     fn ready(&mut self) {
         if let Some(mut tree) = self.base.get_tree() {
             let mut timer = tree.create_timer(self.delay_seconds as f64).unwrap();
+            let obj_typed: Gd<DelayedInstance> = self.base.clone().cast();
             timer.connect(
                 StringName::from("timeout"),
-                Callable::from_object_method(
-                    self.base.clone().cast() as Gd<DelayedInstance>,
-                    "instance_stored",
-                ),
+                Callable::from_object_method(obj_typed, "instance_stored"),
             );
         }
     }
@@ -47,7 +45,8 @@ impl DelayedInstance {
         if let Some(mut parent) = self.base.get_parent() {
             if let Some(packed) = self.scene.clone() {
                 if let Some(scene) = packed.instantiate() {
-                    if let Some(mut node3d) = scene.clone().try_cast() as Option<Gd<Node3D>> {
+                    let option_typed: Option<Gd<Node3D>> = scene.clone().try_cast();
+                    if let Some(mut node3d) = option_typed {
                         // if the scene node root is a Node3D, apply the transform to allow things
                         node3d.set_global_transform(self.base.get_global_transform());
                         parent.add_child(node3d.upcast());
