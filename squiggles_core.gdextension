@@ -15,12 +15,12 @@ macos.release.arm64 =    "res://squiggles_core/target/release/libsquiggles_core.
 
 [icons]
 
-; camera.rs
+;; camera.rs
 
 CameraBrain3D = "res://squiggles_core/assets/icons/camera_brain.svg"
 VirtualCamera3D = "res://squiggles_core/assets/icons/virtual_camera.svg"
 
-; interaction.rs
+;; interaction.rs
 
 InteractRaycast3D = "res://squiggles_core/assets/icons/interaction_raycast3d.svg"
 InteractArea3D = "res://squiggles_core/assets/icons/interaction_area3d.svg"
@@ -28,7 +28,7 @@ InteractionObjectArea3D = "res://squiggles_core/assets/icons/interact_object_are
 InteractionObjectStaticBody3D = "res://squiggles_core/assets/icons/interact_object_static3d.svg"
 InteractionObjectCharacterBody3D = "res://squiggles_core/assets/icons/interact_object_character3d.svg"
 
-; state_machine.rs
+;; state_machine.rs
 
 FiniteStateMachine = "res://squiggles_core/assets/icons/fsm.svg"
 FiniteState = "res://squiggles_core/assets/icons/fsm_state.svg"
