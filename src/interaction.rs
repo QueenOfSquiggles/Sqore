@@ -3,8 +3,6 @@ use godot::engine::{Area3D, CharacterBody3D, IArea3D, IRayCast3D, RayCast3D, Sta
 use godot::prelude::*;
 use once_cell::sync::Lazy;
 
-// TODO: add signals to the interactobjects for on_select and on_deselect so users can just hook into signals without needing to implement other stuff if they so choose
-
 // these are accessed by calling .clone(). Normally I'd dislike this, but StringName is ref-counted so duplicating it is almost completely free
 static METHOD_SELECT: Lazy<StringName> = Lazy::new(|| StringName::from("on_select"));
 static METHOD_DESELECT: Lazy<StringName> = Lazy::new(|| StringName::from("on_deselect"));
@@ -20,6 +18,7 @@ static SIGNAL_ON_DESELECTED: Lazy<StringName> = Lazy::new(|| StringName::from("o
 struct InteractRaycast3D {
     #[export]
     filter_groups: PackedStringArray,
+    #[var]
     target: Option<Gd<Node3D>>,
     #[base]
     base: Base<RayCast3D>,
@@ -30,6 +29,7 @@ struct InteractRaycast3D {
 struct InteractArea3D {
     #[export]
     filter_groups: PackedStringArray,
+    #[var]
     target: Option<Gd<Node3D>>,
     #[base]
     base: Base<Area3D>,
@@ -321,38 +321,5 @@ impl InteractionObjectCharacterBody3D {
     fn get_interact_name(&self) -> GString {
         warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
         GString::from("No name given")
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    // use super::*;
-
-    #[test]
-    fn test_raycast_detect() {
-        // Error thrown because this requires the godot engine for testing
-        // basically, testing requires a scene tree, which requires godot. So as a library we can't really test directly. Unless we want to test something that doesn't rely on Godot's engine stuff.
-        // - - - - - - -
-        // use godot::{
-        //     engine::{CollisionShape3D, SphereShape3D},
-        //     obj::UserClass,
-        // };
-        // let mut ray: Gd<InteractRaycast3D> = InteractRaycast3D::alloc_gd();
-        // let mut object = InteractionObjectArea3D::alloc_gd();
-        // ray.set_collide_with_bodies(true);
-        // ray.set_global_position(Vector3::new(0.0, 0.0, -1.0));
-        // ray.set_target_position(Vector3::new(0.0, 0.0, 5.0));
-        // object.set_global_position(Vector3::new(0.0, 0.0, 1.0));
-        // let mut obj_coll = CollisionShape3D::new_alloc();
-        // obj_coll.set_shape(SphereShape3D::new().upcast());
-        // object.add_child(obj_coll.upcast());
-
-        // let scene = SceneTree::new_alloc();
-        // if let Some(mut root) = scene.get_root() {
-        //     root.add_child(ray.clone().upcast());
-        //     root.add_child(object.clone().upcast());
-        //     ray.force_raycast_update();
-        //     assert_eq!(ray.is_colliding(), true);
-        // }
     }
 }
