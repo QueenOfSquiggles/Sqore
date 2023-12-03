@@ -1,5 +1,7 @@
 use crate::error_handling::*;
-use godot::engine::{Area3D, CharacterBody3D, IArea3D, IRayCast3D, RayCast3D, StaticBody3D};
+use godot::engine::{
+    Area3D, CharacterBody3D, IArea3D, IRayCast3D, RayCast3D, RigidBody3D, StaticBody3D,
+};
 use godot::prelude::*;
 use once_cell::sync::Lazy;
 
@@ -54,6 +56,12 @@ struct InteractionObjectStaticBody3D {
 struct InteractionObjectCharacterBody3D {
     #[base]
     base: Base<CharacterBody3D>,
+}
+#[derive(GodotClass)]
+#[class(init, base=RigidBody3D)]
+struct InteractionObjectRigidBody3D {
+    #[base]
+    base: Base<RigidBody3D>,
 }
 
 #[godot_api]
@@ -281,6 +289,51 @@ impl InteractionObjectStaticBody3D {
 
 #[godot_api]
 impl InteractionObjectCharacterBody3D {
+    #[signal]
+    fn on_interacted() {}
+    #[signal]
+    fn on_selected() {}
+    #[signal]
+    fn on_deselected() {}
+
+    #[func]
+    fn on_select(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
+        self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
+    }
+    #[func]
+    fn on_deselect(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
+        self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
+    }
+
+    #[func]
+    fn interact(&mut self) {
+        if !self.base.is_inside_tree() {
+            return;
+        }
+        self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
+    }
+
+    #[func]
+    fn get_active(&self) -> bool {
+        warn_unimplemented(self.base.clone().upcast(), "get_active");
+        true
+    }
+
+    #[func]
+    fn get_interact_name(&self) -> GString {
+        warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
+        GString::from("No name given")
+    }
+}
+
+#[godot_api]
+impl InteractionObjectRigidBody3D {
     #[signal]
     fn on_interacted() {}
     #[signal]

@@ -156,6 +156,16 @@ pub impl SaveDataBuilder {
         };
         valid
     }
+
+    pub fn get_entry_from<T: FromGodot>(dict: &Dictionary, key: &str) -> Option<T> {
+        let Some(value) = dict.get(key.to_godot()) else {
+            return None;
+        };
+        let Ok(valid_value) = T::try_from_variant(&value) else {
+            return None;
+        };
+        Some(valid_value)
+    }
 }
 
 /// Unfortunately this only can be used internally, but it grants access to serialization functions for all serializable functions

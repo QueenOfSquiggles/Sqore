@@ -2,16 +2,31 @@ use godot::prelude::*;
 
 use crate::serialization::SquigglesSerialized;
 
-use self::graphics::GameGraphicsSettings;
+use self::{
+    audio::GameAudioSettings, controls::GameControlsSettings, gameplay::GameGameplaySettings,
+    graphics::GameGraphicsSettings,
+};
 
+pub mod accessibility;
+pub mod audio;
+pub mod controls;
+pub mod effects;
+pub mod gameplay;
 pub mod graphics;
 
 #[derive(GodotClass)]
 #[class(tool, base=Resource)]
 pub struct SquigglesCoreConfig {
     #[export]
-    graphics: Gd<graphics::GameGraphicsSettings>,
+    graphics: Gd<GameGraphicsSettings>,
+    #[export]
+    controls: Gd<GameControlsSettings>,
+    #[export]
+    gameplay: Gd<GameGameplaySettings>,
+    #[export]
+    audio: Gd<GameAudioSettings>,
 
+    //
     #[base]
     base: Base<Resource>,
 }
@@ -21,6 +36,9 @@ impl IResource for SquigglesCoreConfig {
         Self {
             base,
             graphics: GameGraphicsSettings::new_gd(),
+            controls: GameControlsSettings::new_gd(),
+            gameplay: GameGameplaySettings::new_gd(),
+            audio: GameAudioSettings::new_gd(),
         }
     }
 }
@@ -31,9 +49,13 @@ impl SquigglesCoreConfig {}
 impl SquigglesSerialized for SquigglesCoreConfig {
     fn serialize(&mut self) {
         self.graphics.bind_mut().serialize();
+        self.controls.bind_mut().serialize();
+        self.audio.bind_mut().serialize();
     }
 
     fn deserialize(&mut self) {
         self.graphics.bind_mut().deserialize();
+        self.controls.bind_mut().deserialize();
+        self.audio.bind_mut().deserialize();
     }
 }

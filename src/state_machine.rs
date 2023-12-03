@@ -55,7 +55,7 @@ impl FiniteStateMachine {
     #[func]
     fn do_tick(&mut self, delta: f64) {
         if let Some(mut state) = self.current.clone() {
-            state.call(METHOD_TICK.clone(), &[delta.to_variant()]);
+            state.call_deferred(METHOD_TICK.clone(), &[delta.to_variant()]);
         }
     }
 
@@ -76,12 +76,12 @@ impl FiniteState {
     #[signal]
     fn exit_state() {}
 
-    #[func]
-    fn on_exit(&mut self) {}
-    #[func]
-    fn on_enter(&mut self) {}
-    #[func]
-    fn tick(&mut self, _delta: f64) {}
+    // #[func]
+    // fn on_exit(&mut self) {}
+    // #[func]
+    // fn on_enter(&mut self) {}
+    // #[func]
+    // fn tick(&mut self, _delta: f64) {}
 }
 #[godot_api]
 impl FiniteSubStateMachine {
