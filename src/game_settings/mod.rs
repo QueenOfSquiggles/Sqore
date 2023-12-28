@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::serialization::SquigglesSerialized;
+use crate::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
 
 use self::{
     audio::GameAudioSettings, controls::GameControlsSettings, gameplay::GameGameplaySettings,
@@ -15,47 +15,63 @@ pub mod gameplay;
 pub mod graphics;
 
 #[derive(GodotClass)]
-#[class(tool, base=Resource)]
+#[class(tool, init, base=Resource)]
 pub struct SquigglesCoreConfig {
     #[export]
-    graphics: Gd<GameGraphicsSettings>,
+    graphics: Option<Gd<GameGraphicsSettings>>,
     #[export]
-    controls: Gd<GameControlsSettings>,
+    controls: Option<Gd<GameControlsSettings>>,
     #[export]
-    gameplay: Gd<GameGameplaySettings>,
+    gameplay: Option<Gd<GameGameplaySettings>>,
     #[export]
-    audio: Gd<GameAudioSettings>,
+    audio: Option<Gd<GameAudioSettings>>,
+    #[export]
+    vfx_stack: Option<Gd<VFXStack>>,
 
     //
     #[base]
     base: Base<Resource>,
 }
 #[godot_api]
-impl IResource for SquigglesCoreConfig {
-    fn init(base: Base<Self::Base>) -> Self {
-        Self {
-            base,
-            graphics: GameGraphicsSettings::new_gd(),
-            controls: GameControlsSettings::new_gd(),
-            gameplay: GameGameplaySettings::new_gd(),
-            audio: GameAudioSettings::new_gd(),
-        }
-    }
-}
+impl IResource for SquigglesCoreConfig {}
 
 #[godot_api]
 impl SquigglesCoreConfig {}
 
 impl SquigglesSerialized for SquigglesCoreConfig {
     fn serialize(&mut self) {
-        self.graphics.bind_mut().serialize();
-        self.controls.bind_mut().serialize();
-        self.audio.bind_mut().serialize();
+        if let Some(mut gfx) = self.graphics.clone() {
+            gfx.bind_mut().serialize();
+        }
+        if let Some(mut controls) = self.controls.clone() {
+            controls.bind_mut().serialize();
+        }
+        if let Some(mut audio) = self.audio.clone() {
+            audio.bind_mut().serialize();
+        }
+        // if let Some(mut gameplay) = self.gameplay {
+        // 	gameplay.bind_mut().serialize();
+        // }
+        // if let Some(mut vfx) = self.vfx_stack {
+        // 	vfx.bind_mut().serialize();
+        // }
     }
 
     fn deserialize(&mut self) {
-        self.graphics.bind_mut().deserialize();
-        self.controls.bind_mut().deserialize();
-        self.audio.bind_mut().deserialize();
+        if let Some(mut gfx) = self.graphics.clone() {
+            gfx.bind_mut().deserialize()
+        }
+        if let Some(mut controls) = self.controls.clone() {
+            controls.bind_mut().deserialize()
+        }
+        if let Some(mut audio) = self.audio.clone() {
+            audio.bind_mut().deserialize()
+        }
+        // if let Some(mut gameplay) = self.gameplay {
+        // 	gameplay.bind_mut().deserialize();
+        // }
+        // if let Some(mut vfx) = self.vfx_stack {
+        // 	vfx.bind_mut().deserialize();
+        // }
     }
 }

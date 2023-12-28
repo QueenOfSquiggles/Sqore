@@ -1,4 +1,3 @@
-use crate::error_handling::*;
 use godot::engine::{
     Area3D, CharacterBody3D, IArea3D, IRayCast3D, RayCast3D, RigidBody3D, StaticBody3D,
 };
@@ -40,6 +39,10 @@ struct InteractArea3D {
 #[derive(GodotClass)]
 #[class(init, base=Area3D)]
 struct InteractionObjectArea3D {
+    #[export]
+    is_active: bool,
+    #[export]
+    active_name: GString,
     #[base]
     base: Base<Area3D>,
 }
@@ -47,6 +50,10 @@ struct InteractionObjectArea3D {
 #[derive(GodotClass)]
 #[class(init, base=StaticBody3D)]
 struct InteractionObjectStaticBody3D {
+    #[export]
+    is_active: bool,
+    #[export]
+    active_name: GString,
     #[base]
     base: Base<StaticBody3D>,
 }
@@ -54,14 +61,43 @@ struct InteractionObjectStaticBody3D {
 #[derive(GodotClass)]
 #[class(init, base=CharacterBody3D)]
 struct InteractionObjectCharacterBody3D {
+    #[export]
+    is_active: bool,
+    #[export]
+    active_name: GString,
     #[base]
     base: Base<CharacterBody3D>,
 }
 #[derive(GodotClass)]
 #[class(init, base=RigidBody3D)]
 struct InteractionObjectRigidBody3D {
+    #[export]
+    is_active: bool,
+    #[export]
+    active_name: GString,
     #[base]
     base: Base<RigidBody3D>,
+}
+
+fn is_active_interactable_object(node: Gd<Node>) -> bool {
+    let oacast: Result<Gd<InteractionObjectArea3D>, _> = node.clone().try_cast();
+    if let Ok(oa) = oacast {
+        return oa.bind().get_active();
+    }
+    let oscast: Result<Gd<InteractionObjectStaticBody3D>, _> = node.clone().try_cast();
+    if let Ok(os) = oscast {
+        return os.bind().get_active();
+    }
+    let occast: Result<Gd<InteractionObjectCharacterBody3D>, _> = node.clone().try_cast();
+    if let Ok(oc) = occast {
+        return oc.bind().get_active();
+    }
+    let orcast: Result<Gd<InteractionObjectRigidBody3D>, _> = node.try_cast();
+    if let Ok(or) = orcast {
+        return or.bind().get_active();
+    }
+
+    true
 }
 
 #[godot_api]
@@ -89,11 +125,16 @@ impl IRayCast3D for InteractRaycast3D {
                         break;
                     }
                 }
-                if in_group && coll3d.has_method(METHOD_INTERACT.clone()) {
+                if in_group
+                    && coll3d.has_method(METHOD_INTERACT.clone())
+                    && is_active_interactable_object(coll3d.clone().upcast())
+                {
                     // valid object for interaction
                     let mut has_changed = false;
                     if let Some(prev) = self.target.as_mut() {
-                        if !prev.eq(&coll3d) {
+                        if !prev.is_instance_valid() {
+                            has_changed = true;
+                        } else if prev.instance_id_unchecked() != coll3d.instance_id_unchecked() {
                             if prev.has_method(METHOD_DESELECT.clone()) {
                                 prev.call(METHOD_DESELECT.clone(), &[]);
                             }
@@ -162,6 +203,10 @@ impl IArea3D for InteractArea3D {
             if !in_group || !target.has_method(METHOD_INTERACT.clone()) {
                 continue;
             }
+            if !is_active_interactable_object(target.clone().upcast()) {
+                continue;
+            }
+
             let d = self
                 .base
                 .get_global_position()
@@ -231,14 +276,12 @@ impl InteractionObjectArea3D {
 
     #[func]
     fn get_active(&self) -> bool {
-        warn_unimplemented(self.base.clone().upcast(), "get_active");
-        true
+        self.is_active
     }
 
     #[func]
     fn get_interact_name(&self) -> GString {
-        warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
-        GString::from("No name given")
+        self.active_name.clone()
     }
 }
 
@@ -273,17 +316,14 @@ impl InteractionObjectStaticBody3D {
         }
         self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
     }
-
     #[func]
     fn get_active(&self) -> bool {
-        warn_unimplemented(self.base.clone().upcast(), "get_active");
-        true
+        self.is_active
     }
 
     #[func]
     fn get_interact_name(&self) -> GString {
-        warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
-        GString::from("No name given")
+        self.active_name.clone()
     }
 }
 
@@ -318,17 +358,14 @@ impl InteractionObjectCharacterBody3D {
         }
         self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
     }
-
     #[func]
     fn get_active(&self) -> bool {
-        warn_unimplemented(self.base.clone().upcast(), "get_active");
-        true
+        self.is_active
     }
 
     #[func]
     fn get_interact_name(&self) -> GString {
-        warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
-        GString::from("No name given")
+        self.active_name.clone()
     }
 }
 
@@ -366,13 +403,11 @@ impl InteractionObjectRigidBody3D {
 
     #[func]
     fn get_active(&self) -> bool {
-        warn_unimplemented(self.base.clone().upcast(), "get_active");
-        true
+        self.is_active
     }
 
     #[func]
     fn get_interact_name(&self) -> GString {
-        warn_unimplemented(self.base.clone().upcast(), "get_interact_name");
-        GString::from("No name given")
+        self.active_name.clone()
     }
 }

@@ -1,4 +1,7 @@
-use godot::{engine::display_server::WindowMode, prelude::*};
+use godot::{
+    engine::{display_server::WindowMode, viewport::Scaling3DMode, DisplayServer, ProjectSettings},
+    prelude::*,
+};
 
 use crate::serialization::{SaveDataBuilder, SquigglesSerialized};
 
@@ -25,6 +28,8 @@ pub struct GameGraphicsSettings {
     value_exposure: f32,
     #[export(enum=(Windowed=0, Minimized=1, Maximized=2, Fullscreen=3, ExclusiveFullscreen=4))]
     window_fullscreen_mode: i32,
+    #[export(enum=(Standard=0, FSR10=1, FSR22=2))]
+    scaling_algorithm: i32,
     #[base]
     base: Base<Resource>,
 }
@@ -43,13 +48,43 @@ impl IResource for GameGraphicsSettings {
             value_contrast: 1.0,
             value_saturation: 1.0,
             value_exposure: 1.0,
+            scaling_algorithm: Scaling3DMode::SCALING_3D_MODE_BILINEAR.ord(),
             window_fullscreen_mode: WindowMode::WINDOW_MODE_MAXIMIZED.ord(),
         }
     }
 }
 
 #[godot_api]
-impl GameGraphicsSettings {}
+impl GameGraphicsSettings {
+    #[signal]
+    fn graphics_changed() {}
+
+    #[func]
+    fn mark_dirty(&mut self) {
+        // == 3D scaling (FSR)
+        ProjectSettings::singleton().set_setting(
+            "rendering/scaling_3d/mode".to_godot(),
+            self.scaling_algorithm.to_variant(),
+        );
+
+        // == window mode
+        DisplayServer::singleton().window_set_mode(match self.window_fullscreen_mode {
+            0 => WindowMode::WINDOW_MODE_WINDOWED,
+            1 => WindowMode::WINDOW_MODE_MINIMIZED,
+            2 => WindowMode::WINDOW_MODE_MAXIMIZED,
+            3 => WindowMode::WINDOW_MODE_FULLSCREEN,
+            4 => WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
+            _ => {
+				godot_warn!("CoreGlobals/config/graphics:window_fullscreen_mode = {}. This is outside of the allowed bounds. Don't frickin do that!?", self.window_fullscreen_mode);
+				WindowMode::WINDOW_MODE_WINDOWED},
+    	    }
+		);
+
+        // emit signal out
+        self.base
+            .emit_signal(StringName::from("graphics_changed"), &[]);
+    }
+}
 
 const GRAPHICS_SAVE_PATH: &str = "user://core/graphics.json";
 
@@ -81,6 +116,10 @@ impl SquigglesSerialized for GameGraphicsSettings {
         bind.set_value(
             "window_fullscreen_mode".to_godot(),
             self.window_fullscreen_mode.to_variant(),
+        );
+        bind.set_value(
+            "scaling_algorithm".to_godot(),
+            self.scaling_algorithm.to_variant(),
         );
         bind.save(GRAPHICS_SAVE_PATH.into_godot());
     }

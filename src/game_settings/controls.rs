@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use godot::{
     engine::{
         global::{JoyAxis, JoyButton, Key, MouseButton},
-        InputEvent, InputEventJoypadButton, InputEventJoypadMotion, InputEventKey,
-        InputEventMouseButton, InputMap,
+        ClassDb, InputEvent, InputEventJoypadButton, InputEventJoypadMotion, InputEventKey,
+        InputEventMouseButton, InputMap, Json,
     },
     prelude::*,
 };
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::serialization::{SaveDataBuilder, SquigglesSerialized};
 
@@ -26,6 +26,24 @@ enum HandledInputEvents {
     JoypadMotion = 1,
     Key = 2,
     MouseButton = 3,
+    Generic = 4,
+}
+
+impl ToPrimitive for HandledInputEvents {
+    fn to_i64(&self) -> Option<i64> {
+        match self {
+            HandledInputEvents::JoypadButton => Some(0),
+            HandledInputEvents::JoypadMotion => Some(1),
+            HandledInputEvents::Key => Some(2),
+            HandledInputEvents::MouseButton => Some(3),
+            HandledInputEvents::Generic => Some(4),
+        }
+    }
+
+    fn to_u64(&self) -> Option<u64> {
+        let val = self.to_i64();
+        Some(u64::try_from(val.unwrap_or(0)).unwrap_or(0))
+    }
 }
 
 type MappingStorage = HashMap<GString, Array<Gd<InputEvent>>>;
@@ -68,6 +86,7 @@ impl IResource for GameControlsSettings {
 
 #[godot_api]
 impl GameControlsSettings {
+    #[func]
     fn load_binds(&self) {
         for (action, mappings) in self.mapping_overrides.clone() {
             let sn = StringName::from(action.to_string());
@@ -77,9 +96,11 @@ impl GameControlsSettings {
             }
         }
     }
+    #[func]
     fn can_bind(&self, action: GString) -> bool {
         let option_map_style: Option<MappingsStyle> = FromPrimitive::from_i32(self.mappings_style);
         let Some(map_style) = option_map_style else {
+            godot_warn!("failed to map internal rust->MappingsStyle to i32. This will break deserialization for controls bindings");
             return false;
         };
         match map_style {
@@ -88,6 +109,7 @@ impl GameControlsSettings {
             MappingsStyle::OnlySpecified => self.allowed_mappings.contains(action),
         }
     }
+    #[func]
     fn push_bind(&mut self, action_name: GString, event: Gd<InputEvent>) {
         if let Some(arr) = self.mapping_overrides.get_mut(&action_name) {
             arr.push(event.upcast());
@@ -95,6 +117,35 @@ impl GameControlsSettings {
             let mut arr: Array<Gd<InputEvent>> = Array::new();
             arr.push(event);
             self.mapping_overrides.insert(action_name, arr);
+        }
+    }
+
+    fn bind_generic(&mut self, data_dict: Dictionary, action_name: GString) {
+        godot_print!("Trying to load generic event for action\"{}\"", action_name);
+        // TODO: this is where I would usually use some kind of reflection? Not sure how I could manage that?
+        let res_str_data = GString::try_from_variant(&data_dict.get_or_nil("json_data"));
+        let Ok(str_data) = res_str_data else {
+            return;
+        };
+        if !str_data.to_string().starts_with("\"InputEvent") {
+            // guard against non-inputevent types (which all have InputEvent* as a prefix)
+            return;
+        }
+        let stringval = str_data.to_string();
+        let parts: Vec<&str> = stringval.splitn(3, '\"').collect();
+        if parts.len() != 3 {
+            return;
+        }
+        godot_print!(
+            "Attempting to initialize an InputEvent of type \"{}\"",
+            parts[1]
+        );
+        let sname = StringName::from(parts[1]);
+        let classes = ClassDb::singleton();
+        if classes.class_exists(sname.clone()) && classes.can_instantiate(sname.clone()) {
+            #[allow(unused)] // just to clear this pesky warning
+            let instance = classes.instantiate(sname);
+            // TODO: how to we cast this variant to an object type? (Which would allow us to try to downcast)
         }
     }
 
@@ -184,12 +235,34 @@ impl GameControlsSettings {
     // Key = 2,
     // MouseButton = 3,
 
+    fn ser_generic(&self, event: Gd<InputEvent>) -> Option<Dictionary> {
+        let mut dict = Dictionary::new();
+        dict.insert(
+            "type".to_godot(),
+            HandledInputEvents::Generic
+                .to_i32()
+                .unwrap_or(-1)
+                .to_variant(),
+        );
+
+        let data = Json::stringify(event.to_variant());
+        dict.insert("json_data", data);
+        Some(dict)
+    }
+
     fn ser_joy_button(&self, event: Gd<InputEvent>) -> Option<Dictionary> {
         let rcast: Result<Gd<InputEventJoypadButton>, _> = event.try_cast();
         let Ok(event) = rcast else {
             return None;
         };
         let mut dict = Dictionary::new();
+        dict.insert(
+            "type".to_godot(),
+            HandledInputEvents::JoypadButton
+                .to_i32()
+                .unwrap_or(-1)
+                .to_variant(),
+        );
         dict.insert("button_index".to_godot(), event.get_button_index().ord());
         dict.insert("pressed".to_godot(), event.is_pressed());
         dict.insert("pressure".to_godot(), event.get_pressure());
@@ -202,6 +275,14 @@ impl GameControlsSettings {
             return None;
         };
         let mut dict = Dictionary::new();
+        dict.insert(
+            "type".to_godot(),
+            HandledInputEvents::JoypadMotion
+                .to_i32()
+                .unwrap_or(-1)
+                .to_variant(),
+        );
+
         dict.insert("axis".to_godot(), event.get_axis());
         dict.insert("axis_value".to_godot(), event.get_axis_value());
 
@@ -213,6 +294,10 @@ impl GameControlsSettings {
             return None;
         };
         let mut dict = Dictionary::new();
+        dict.insert(
+            "type".to_godot(),
+            HandledInputEvents::Key.to_i32().unwrap_or(-1).to_variant(),
+        );
         dict.insert("echo".to_godot(), event.is_echo());
         dict.insert("key_label".to_godot(), event.get_key_label());
         dict.insert("keycode".to_godot(), event.get_keycode().ord());
@@ -231,6 +316,13 @@ impl GameControlsSettings {
             return None;
         };
         let mut dict = Dictionary::new();
+        dict.insert(
+            "type".to_godot(),
+            HandledInputEvents::MouseButton
+                .to_i32()
+                .unwrap_or(-1)
+                .to_variant(),
+        );
         dict.insert("button_index".to_godot(), event.get_button_index());
         dict.insert("cancelled".to_godot(), event.is_canceled());
         dict.insert("double_click".to_godot(), event.is_double_click());
@@ -241,7 +333,7 @@ impl GameControlsSettings {
     }
 }
 
-const CONTROLS_SETTINGS_PATH: &str = "user://core/audio.json";
+const CONTROLS_SETTINGS_PATH: &str = "user://core/controls.json";
 impl SquigglesSerialized for GameControlsSettings {
     fn serialize(&mut self) {
         let mut sb = SaveDataBuilder::alloc_gd();
@@ -255,7 +347,9 @@ impl SquigglesSerialized for GameControlsSettings {
                     data_arr.push(dict);
                 } else if let Some(dict) = self.ser_key(event.clone()) {
                     data_arr.push(dict);
-                } else if let Some(dict) = self.ser_mouse_button(event) {
+                } else if let Some(dict) = self.ser_mouse_button(event.clone()) {
+                    data_arr.push(dict);
+                } else if let Some(dict) = self.ser_generic(event) {
                     data_arr.push(dict);
                 }
             }
@@ -269,30 +363,25 @@ impl SquigglesSerialized for GameControlsSettings {
             return;
         };
         let mut sbind = sb.bind_mut();
-        let custom_bindings_dictionary =
-            sbind.internal_get_value("custom_bindings".to_godot(), Dictionary::new());
+        let custom_bindings_dictionary = sbind.get_as_dict();
         for (key, value) in custom_bindings_dictionary.iter_shared() {
             if !self.can_bind(GString::from_variant(&key)) {
+                godot_warn!("Found disallowed binding on disk! This is probably fine, but check into it if you keep seeing this!");
                 continue;
             }
-            if value.get_type() != VariantType::Array {
-                continue;
-            }
-            let opt_event = Dictionary::try_from_variant(&value);
-            let Ok(event_dict) = opt_event else {
-                continue;
-            };
-            let Ok(type_id) = i32::try_from_variant(&event_dict.get_or_nil("type".to_godot()))
-            else {
-                continue;
-            };
-            let opt_event_type: Option<HandledInputEvents> = FromPrimitive::from_i32(type_id);
-            let Some(event_type) = opt_event_type else {
-                continue;
-            };
             let action_name = GString::from_variant(&key);
+
             let values: Array<Dictionary> = Array::try_from_variant(&value).unwrap_or_default();
+            godot_print!("Found mappings on disk for: {} ", key);
             for map in values.iter_shared() {
+                let mut event_type = HandledInputEvents::Generic;
+                if let Ok(type_id) = i32::try_from_variant(&map.get_or_nil("type".to_godot())) {
+                    let opt_event_type: Option<HandledInputEvents> =
+                        FromPrimitive::from_i32(type_id);
+                    if let Some(e_type) = opt_event_type {
+                        event_type = e_type;
+                    }
+                }
                 match event_type {
                     HandledInputEvents::JoypadButton => {
                         self.bind_joypad_button(map, action_name.clone())
@@ -304,6 +393,7 @@ impl SquigglesSerialized for GameControlsSettings {
                     HandledInputEvents::MouseButton => {
                         self.bind_mouse_button(map, action_name.clone())
                     }
+                    HandledInputEvents::Generic => self.bind_generic(map, action_name.clone()),
                 }
             }
         }

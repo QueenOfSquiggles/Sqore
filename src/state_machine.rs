@@ -41,6 +41,9 @@ impl INode for FiniteStateMachine {
         self.base.set_process(self.tick_mode == TickMode::Process);
         self.base
             .set_physics_process(self.tick_mode == TickMode::PhysicsProcess);
+        if let Some(mut curr) = self.current.clone() {
+            curr.call(METHOD_ON_ENTER.clone(), &[]);
+        }
     }
     fn process(&mut self, delta: f64) {
         self.do_tick(delta);
@@ -89,7 +92,11 @@ impl FiniteSubStateMachine {
     fn on_exit(&mut self) {}
 
     #[func]
-    fn on_enter(&mut self) {}
+    fn on_enter(&mut self) {
+        if let Some(mut curr) = self.current.clone() {
+            curr.call(METHOD_ON_ENTER.clone(), &[]);
+        }
+    }
 
     #[func]
     fn tick(&mut self, delta: f64) {

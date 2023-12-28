@@ -5,7 +5,9 @@ use godot::{
 };
 
 use crate::{
-    editor_plugin::SINGLETON_CORE_GLOBALS, game_settings::SquigglesCoreConfig,
+    camera::{CameraBrain3D, CAMERA_BRAIN_GROUP},
+    editor_plugin::SINGLETON_CORE_GLOBALS,
+    game_settings::SquigglesCoreConfig,
     serialization::SquigglesSerialized,
 };
 
@@ -19,6 +21,7 @@ fn get_setting_name(name: &str) -> GString {
 
 #[derive(GodotClass)]
 #[class(tool, base=Object)]
+// Hey, before you try to make this a Node, engine singletons are separate from the scene tree
 pub struct CoreGlobals {
     #[var]
     config: Gd<SquigglesCoreConfig>,
@@ -59,7 +62,10 @@ impl IObject for CoreGlobals {
             config: possible_config.unwrap_or(SquigglesCoreConfig::new_gd()),
             base,
         };
-        zelf.reload_globals();
+        if !Engine::singleton().is_editor_hint() {
+            godot_print!("CoreGlobals: loading data from disk");
+            zelf.reload_globals();
+        }
 
         zelf
     }
@@ -89,6 +95,23 @@ impl CoreGlobals {
     #[func]
     fn reload_globals(&mut self) {
         self.deserialize();
+    }
+    #[func]
+    fn get_camera_brain(&mut self, tree: Option<Gd<SceneTree>>) -> Option<Gd<CameraBrain3D>> {
+        let Some(mut tree) = tree else {
+            godot_warn!("CoreGlobals is not in the scene tree!");
+            return None;
+        };
+        let Some(node) = tree.get_first_node_in_group(StringName::from(CAMERA_BRAIN_GROUP)) else {
+            godot_warn!("Failed to find CameraBrain in scene tree!");
+            return None;
+        };
+        let rcast: Result<Gd<CameraBrain3D>, _> = node.try_cast();
+        let Ok(cam_brain) = rcast else {
+            godot_warn!("Found camera brain, failed to cast to correct type!");
+            return None;
+        };
+        Some(cam_brain)
     }
 
     // internal specialized functions

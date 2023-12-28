@@ -3,11 +3,11 @@ use godot::{
     prelude::*,
 };
 
-const CAMERA_BRAIN_GROUP: &str = "camera_brain";
+pub const CAMERA_BRAIN_GROUP: &str = "camera_brain";
 
 #[derive(GodotClass)]
 #[class(base=Camera3D)]
-struct CameraBrain3D {
+pub struct CameraBrain3D {
     cam_buffer: Vec<Gd<VirtualCamera3D>>,
     last_cam: bool,
     #[base]
@@ -68,7 +68,7 @@ impl CameraBrain3D {
 
 #[derive(GodotClass)]
 #[class(base=Marker3D)]
-struct VirtualCamera3D {
+pub struct VirtualCamera3D {
     #[export]
     use_lerp: bool,
 

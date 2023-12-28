@@ -1,6 +1,8 @@
 [configuration]
 entry_symbol = "gdext_rust_init"
-compatibility_minimum = 4.1
+compatibility_minimum = 4.2
+
+
 
 [libraries]
 ;; Debug Binaries
@@ -14,6 +16,7 @@ linux.release.x86_64 =   "res://addons/squiggles_core/target/release/libsquiggle
 windows.release.x86_64 = "res://addons/squiggles_core/target/release/squiggles_core.dll"
 macos.release =          "res://addons/squiggles_core/target/release/libsquiggles_core.dylib"
 macos.release.arm64 =    "res://addons/squiggles_core/target/release/libsquiggles_core.dylib"
+
 
 [icons]
 
