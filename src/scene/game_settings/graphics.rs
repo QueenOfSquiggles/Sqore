@@ -3,7 +3,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::serialization::{SaveDataBuilder, SquigglesSerialized};
+use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
 
 #[derive(GodotClass)]
 #[class(tool, base=Resource)]

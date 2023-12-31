@@ -1,4 +1,4 @@
-use crate::serialization::{SaveDataBuilder, SquigglesSerialized};
+use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
 use godot::prelude::*;
 
 #[derive(GodotClass)]

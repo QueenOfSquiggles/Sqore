@@ -11,7 +11,7 @@ use godot::{
 use num_derive::FromPrimitive;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::serialization::{SaveDataBuilder, SquigglesSerialized};
+use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
 
 #[derive(FromPrimitive)]
 enum MappingsStyle {

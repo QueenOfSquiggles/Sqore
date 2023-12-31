@@ -1,6 +1,6 @@
 use godot::{engine::ShaderMaterial, prelude::*};
 
-use crate::signals::emit;
+use crate::scene::signals::emit;
 
 #[derive(GodotClass)]
 #[class(init, base=Resource)]

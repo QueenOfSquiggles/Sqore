@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
+use crate::scene::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
 
 use self::{
     audio::GameAudioSettings, controls::GameControlsSettings, gameplay::GameGameplaySettings,

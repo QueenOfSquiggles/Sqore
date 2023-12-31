@@ -3,7 +3,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::game_globals::CoreGlobals;
+use crate::scene::game_globals::CoreGlobals;
 
 use super::vfx_stack_resource::VFXStack;
 

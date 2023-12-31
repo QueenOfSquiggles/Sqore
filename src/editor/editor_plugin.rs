@@ -1,12 +1,8 @@
 use godot::engine::{EditorCommandPalette, EditorPlugin, IEditorPlugin, PopupMenu};
 use godot::prelude::*;
 
-use crate::game_globals::CoreGlobals;
-use crate::serialization::SquigglesSerialized;
-
-pub fn register_editor_elements() {}
-
-pub fn unregister_editor_elements() {}
+use crate::scene::game_globals::CoreGlobals;
+use crate::scene::serialization::SquigglesSerialized;
 
 #[derive(GodotClass)]
 #[class(tool, editor_plugin, init, base=EditorPlugin)]

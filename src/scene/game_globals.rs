@@ -5,10 +5,10 @@ use godot::{
 };
 
 use crate::{
-    camera::{CameraBrain3D, CAMERA_BRAIN_GROUP},
-    editor_plugin::SINGLETON_CORE_GLOBALS,
-    game_settings::SquigglesCoreConfig,
-    serialization::SquigglesSerialized,
+    scene::camera::{CameraBrain3D, CAMERA_BRAIN_GROUP},
+    scene::editor_plugin::SINGLETON_CORE_GLOBALS,
+    scene::game_settings::SquigglesCoreConfig,
+    scene::serialization::SquigglesSerialized,
 };
 
 const PROJECT_SETTINGS_NAMESPACE: &str = "addons/squiggles_core/";

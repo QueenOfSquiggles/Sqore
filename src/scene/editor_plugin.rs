@@ -1,7 +1,7 @@
 use godot::{engine::*, prelude::*};
 use once_cell::sync::Lazy;
 
-use crate::game_globals::CoreGlobals;
+use crate::scene::game_globals::CoreGlobals;
 
 pub static SINGLETON_CORE_GLOBALS: Lazy<StringName> = Lazy::new(|| StringName::from("CoreGlobals"));
 
