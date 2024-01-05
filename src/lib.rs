@@ -14,13 +14,13 @@ struct SquigglesCore;
 unsafe impl ExtensionLibrary for SquigglesCore {
     fn on_level_init(level: InitLevel) {
         if level == InitLevel::Scene {
-            scene::editor_plugin::register_engine_elements();
+            scene::register_singletons();
         }
     }
 
     fn on_level_deinit(level: InitLevel) {
         if level == InitLevel::Scene {
-            scene::editor_plugin::unregister_engine_elements();
+            scene::unregister_singletons();
         }
     }
 }

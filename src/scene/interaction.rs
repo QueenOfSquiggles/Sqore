@@ -108,7 +108,7 @@ impl InteractRaycast3D {
     #[func]
     fn do_interact(&mut self) {
         if let Some(mut target) = self.target.clone() {
-            target.call(METHOD_INTERACT.clone(), &[]);
+            target.call_deferred(METHOD_INTERACT.clone(), &[]);
         }
     }
 }
@@ -171,7 +171,7 @@ impl InteractArea3D {
     #[func]
     fn do_interact(&mut self) {
         if let Some(target) = self.target.as_mut() {
-            target.call(METHOD_INTERACT.clone(), &[]);
+            target.call_deferred(METHOD_INTERACT.clone(), &[]);
         }
     }
 }

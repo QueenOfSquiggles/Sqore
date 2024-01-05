@@ -5,8 +5,6 @@ use godot::{
 
 use crate::scene::game_globals::CoreGlobals;
 
-use super::vfx_stack_resource::VFXStack;
-
 #[derive(GodotClass)]
 #[class(base=MeshInstance3D)]
 pub struct VFXQuad {
@@ -52,16 +50,8 @@ impl IMeshInstance3D for VFXQuad {
 
     fn ready(&mut self) {
         self.base.set_mesh(QuadMesh::new().upcast());
-        let Some(mut vfx) = CoreGlobals::singleton()
-            .bind()
-            .get_config()
-            .bind()
-            .get_vfx_stack()
-        else {
-            return;
-        };
-        vfx.connect(
-            StringName::from(VFXStack::SIGNAL_VFX_STACK_CHANGED),
+        CoreGlobals::singleton().connect(
+            StringName::from(CoreGlobals::SIGNAL_VFX_STACK_CHANGED),
             Callable::from_object_method(&self.base, Self::CALLABLE_REFRESH_VFX_STACK),
         );
         self.base.set_material_override(self.vfx.clone().upcast());

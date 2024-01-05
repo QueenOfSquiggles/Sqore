@@ -94,18 +94,34 @@ impl IMarker3D for VirtualCamera3D {
     }
 
     fn ready(&mut self) {
+        if self.push_on_ready {
+            self.push();
+        }
+    }
+}
+#[godot_api]
+impl VirtualCamera3D {
+    #[func]
+    fn push(&mut self) {
         if let Some(mut tree) = self.base.get_tree() {
-            if self.push_on_ready {
-                if let Some(brain_tree) = tree.get_first_node_in_group(CAMERA_BRAIN_GROUP.into()) {
-                    let option_temp: Result<Gd<CameraBrain3D>, Gd<Node>> = brain_tree.try_cast();
-                    if let Ok(mut brain) = option_temp {
-                        let self_gd: Gd<Self> = self.base.clone().cast();
-                        brain.bind_mut().push_cam(self_gd);
-                    }
+            if let Some(brain_tree) = tree.get_first_node_in_group(CAMERA_BRAIN_GROUP.into()) {
+                let option_temp: Result<Gd<CameraBrain3D>, Gd<Node>> = brain_tree.try_cast();
+                if let Ok(mut brain) = option_temp {
+                    brain.bind_mut().push_cam(self.to_gd());
+                }
+            }
+        }
+    }
+
+    #[func]
+    fn pop(&mut self) {
+        if let Some(mut tree) = self.base.get_tree() {
+            if let Some(brain_tree) = tree.get_first_node_in_group(CAMERA_BRAIN_GROUP.into()) {
+                let option_temp: Result<Gd<CameraBrain3D>, Gd<Node>> = brain_tree.try_cast();
+                if let Ok(mut brain) = option_temp {
+                    brain.bind_mut().pop_cam(self.to_gd());
                 }
             }
         }
     }
 }
-#[godot_api]
-impl VirtualCamera3D {}

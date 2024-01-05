@@ -1,5 +1,5 @@
 pub mod camera;
-pub mod editor_plugin;
+pub mod dialog;
 pub mod error_handling;
 pub mod game_globals;
 pub mod game_settings;
@@ -12,3 +12,13 @@ pub mod signals;
 pub mod state_machine;
 pub mod utility_nodes;
 pub mod vfx_stack;
+
+pub fn register_singletons() {
+    game_globals::register_singleton();
+    dialog::register_singleton();
+}
+
+pub fn unregister_singletons() {
+    game_globals::register_singleton();
+    dialog::unregister_singleton();
+}
