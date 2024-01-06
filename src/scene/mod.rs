@@ -19,6 +19,6 @@ pub fn register_singletons() {
 }
 
 pub fn unregister_singletons() {
-    game_globals::register_singleton();
+    game_globals::unregister_singleton();
     dialog::unregister_singleton();
 }

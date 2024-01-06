@@ -1,12 +1,14 @@
 use godot::{engine::Engine, prelude::*};
 
-use super::{dialog_gui::DialogGUI, dialog_track::DialogTrack};
+use super::{
+    dialog_gui::DialogGUI,
+    dialog_track::{DialogError, DialogTrack},
+};
 
 #[derive(GodotClass)]
 #[class(init, base=Node)]
 pub struct CoreDialog {
-    #[var]
-    current_track: Option<Gd<DialogTrack>>,
+    current_track: Option<DialogTrack>,
     #[var]
     current_line_index: i32,
     gui: Option<DialogGUI>,
@@ -25,22 +27,30 @@ impl CoreDialog {
     pub const SINGLETON_NAME: &'static str = "CoreDialog";
 
     #[signal]
-    fn track_ended(track: Gd<DialogTrack>) {}
+    fn track_ended(track: GString) {}
     #[signal]
     fn track_signal(name: GString, args: Array<Variant>) {}
     #[signal]
-    fn track_started(track: Gd<DialogTrack>) {}
+    fn track_started(track: GString) {}
 
     #[func]
-    pub fn load_track(&mut self, track: Gd<DialogTrack>) {
-        self.current_track = Some(track.clone());
-        self.current_line_index = 0;
-        self.base.emit_signal(
-            StringName::from(Self::SIGNAL_TRACK_STARTED),
-            &[track.to_variant()],
-        );
+    pub fn load_track(&mut self, file_path: GString) {
+        match DialogTrack::load_from_json(file_path) {
+            Err(error) => Self::handle_dialog_error(error),
+            Ok(track) => self.current_track = Some(track),
+        }
+        let Some(track) = &self.current_track else {
+            return;
+        };
+        for (index, line) in track.lines.iter().enumerate() {
+            println!("Dialog Track [line {}] {:#?}", index, line);
+        }
+    }
 
-        // Start playing dialog
+    fn handle_dialog_error(err: DialogError) {
+        let reason = format!("{:#?}", err);
+        godot_error!("DialogError: {}", reason);
+        // godot_print!("DialogError : {}", reason);
     }
 
     pub fn singleton() -> Gd<CoreDialog> {

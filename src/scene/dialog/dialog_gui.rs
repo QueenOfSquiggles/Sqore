@@ -20,7 +20,7 @@ impl ICanvasLayer for DialogGUI {
         //pass
     }
 
-    fn input(&mut self, event: Gd<InputEvent>) {}
+    fn input(&mut self, _event: Gd<InputEvent>) {}
 
     fn exit_tree(&mut self) {
         //pass
