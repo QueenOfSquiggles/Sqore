@@ -1,9 +1,9 @@
 use self::dialog_manager::CoreDialog;
 use godot::{engine::Engine, prelude::*};
 
-mod dialog_manager;
-mod dialog_track;
-mod dialog_gui;
+pub mod dialog_gui;
+pub mod dialog_manager;
+pub mod dialog_track;
 
 pub fn register_singleton() {
     Engine::singleton().register_singleton(

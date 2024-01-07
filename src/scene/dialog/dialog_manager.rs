@@ -1,23 +1,27 @@
 use godot::{engine::Engine, prelude::*};
 
+use crate::util::SquigglesUtil;
+
 use super::{
-    dialog_gui::DialogGUI,
+    dialog_gui::{DialogGUI, DialogSettings},
     dialog_track::{DialogError, DialogTrack},
 };
 
 #[derive(GodotClass)]
-#[class(init, base=Node)]
+#[class(init, base=Object)]
 pub struct CoreDialog {
     current_track: Option<DialogTrack>,
     #[var]
     current_line_index: i32,
-    gui: Option<DialogGUI>,
+    #[var]
+    override_settings: Option<Gd<DialogSettings>>,
+    gui: Option<Gd<DialogGUI>>,
     #[base]
-    base: Base<Node>,
+    base: Base<Object>,
 }
 
 #[godot_api]
-impl INode for CoreDialog {}
+impl IObject for CoreDialog {}
 
 #[godot_api]
 impl CoreDialog {
@@ -35,16 +39,34 @@ impl CoreDialog {
 
     #[func]
     pub fn load_track(&mut self, file_path: GString) {
-        match DialogTrack::load_from_json(file_path) {
+        // ensure is in tree
+        let Some(tree) = SquigglesUtil::get_scene_tree_global() else {
+            godot_warn!("failed to load godot scene tree for CoreDialog");
+            return;
+        };
+        let Some(root) = tree.get_root() else {
+            return;
+        };
+
+        // load track data
+        match DialogTrack::load_from_json(file_path.clone()) {
             Err(error) => Self::handle_dialog_error(error),
             Ok(track) => self.current_track = Some(track),
         }
         let Some(track) = &self.current_track else {
+            godot_warn!("Failed to load a dialog track from {}", file_path);
             return;
         };
-        for (index, line) in track.lines.iter().enumerate() {
-            println!("Dialog Track [line {}] {:#?}", index, line);
+
+        // kill old GUI
+        if let Some(gui) = self.gui.as_mut() {
+            gui.queue_free();
         }
+
+        // create and add GUI
+        let mut gui = DialogGUI::alloc_gd();
+        gui.bind_mut().track = Some(track.clone());
+        SquigglesUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
     }
 
     fn handle_dialog_error(err: DialogError) {

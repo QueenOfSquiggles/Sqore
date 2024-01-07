@@ -33,17 +33,17 @@ fn get_setting_name(name: &str) -> GString {
 }
 
 #[derive(GodotClass)]
-#[class(tool, base=Node)]
+#[class(tool, base=Object)]
 // Hey, before you try to make this a Node, engine singletons are separate from the scene tree
 pub struct CoreGlobals {
     #[var]
     config: Gd<SquigglesCoreConfig>,
     #[base]
-    base: Base<Node>,
+    base: Base<Object>,
 }
 
 #[godot_api]
-impl INode for CoreGlobals {
+impl IObject for CoreGlobals {
     fn init(base: Base<Self::Base>) -> Self {
         // let mut zelf = Self { config: None, base };
         let mut possible_config: Option<Gd<SquigglesCoreConfig>> = None;
@@ -81,11 +81,6 @@ impl INode for CoreGlobals {
         }
 
         zelf
-    }
-
-    fn ready(&mut self) {
-        self.to_gd()
-            .emit_signal(StringName::from(Self::SIGNAL_VFX_STACK_CHANGED), &[]);
     }
 }
 

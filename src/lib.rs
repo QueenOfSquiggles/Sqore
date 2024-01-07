@@ -6,7 +6,7 @@ use godot::prelude::*;
 // module specifications
 pub mod editor;
 pub mod scene;
-
+pub mod util;
 // extension loading
 struct SquigglesCore;
 

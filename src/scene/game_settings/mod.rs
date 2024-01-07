@@ -1,11 +1,11 @@
 use godot::prelude::*;
 
-use crate::scene::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
-
 use self::{
     audio::GameAudioSettings, controls::GameControlsSettings, gameplay::GameGameplaySettings,
     graphics::GameGraphicsSettings,
 };
+use crate::scene::dialog::dialog_gui::DialogSettings;
+use crate::scene::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
 
 pub mod accessibility;
 pub mod audio;
@@ -27,6 +27,8 @@ pub struct SquigglesCoreConfig {
     audio: Option<Gd<GameAudioSettings>>,
     #[export]
     vfx_stack: Option<Gd<VFXStack>>,
+    #[export]
+    dialog: Option<Gd<DialogSettings>>,
 
     //
     #[base]

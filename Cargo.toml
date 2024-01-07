@@ -11,3 +11,4 @@ godot = { git = "https://github.com/godot-rust/gdext", rev="5e18af8" }
 once_cell = "1.18.0"
 num-traits = "0.2"
 num-derive = "0.2"
+
