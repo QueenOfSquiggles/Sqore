@@ -34,9 +34,9 @@ impl Blackboard {
     const RECOGNIZED_COMMANDS: [&'static str; 3] = ["set", "add", "sub"];
     /// Parses the action string
     pub fn parse_action(&mut self, code: String) {
-        godot_print!("Running action(s): {}", code);
+        // godot_print!("Running action(s): {}", code);
         for action in code.split(';') {
-            godot_print!("Running sub-action: {}", action);
+            // godot_print!("Running sub-action: {}", action);
             let parts = Vec::from_iter(action.trim().splitn(3, ' '));
             if parts.len() != 3 {
                 godot_warn!("Improperly formed dialog code \"{}\". Ignoring", action);
@@ -61,15 +61,15 @@ impl Blackboard {
     }
 
     pub fn parse_query(&mut self, code: String) -> bool {
-        godot_print!("Running quer(y/ies): {}", code);
+        // godot_print!("Running quer(y/ies): {}", code);
         for query in code.split("and") {
             let mut chunk_val = false;
             for options in query.split("or") {
-                godot_print!("Running sub-query: {}", options);
+                // godot_print!("Running sub-query: {}", options);
 
                 let parts = Vec::from_iter(options.split_whitespace());
                 if parts.len() != 3 {
-                    if query.contains("\"") {
+                    if query.contains('\"') {
                         // TODO if someone want's to make this support space strings, go right ahead, I'll accept the PR. But I'm not writing it myself lol
                         godot_error!("Strings with spaces are not supported for queries! Only used for storage!")
                     }
@@ -88,7 +88,7 @@ impl Blackboard {
     fn parse_query_value(&mut self, query: (&str, &str, &str)) -> bool {
         let arg1 = self.get_numeric_value(query.0);
         let arg2 = self.get_numeric_value(query.2);
-        godot_print!("Running internal comparison: {} {} {}", arg1, query.1, arg2);
+        // godot_print!("Running internal comparison: {} {} {}", arg1, query.1, arg2);
         match query.1 {
             "==" => arg1 == arg2,
             "!=" => arg1 != arg2,
@@ -115,7 +115,7 @@ impl Blackboard {
             return;
         };
         self.entries.insert(key.to_string(), entry.clone());
-        godot_print!("Set value: {} = {}. Enum value: {}", key, value, entry);
+        // godot_print!("Set value: {} = {}. Enum value: {}", key, value, entry);
     }
 
     pub fn add(&mut self, key: &str, value: &str) {
@@ -260,7 +260,7 @@ impl Blackboard {
             buffer += "\n";
         }
         buffer += " }";
-        godot_print!("{}", buffer);
+        // godot_print!("{}", buffer);
     }
 }
 
