@@ -10,18 +10,16 @@ use godot::{
 
 use crate::{scene::game_globals::CoreGlobals, util::SquigglesUtil};
 
-use super::{
-    dialog_manager::CoreDialog,
-    dialog_track::{DialogTrack, Line},
-};
+use super::{dialog_manager::CoreDialog, dialog_track::Line};
 
 #[derive(GodotClass)]
 #[class(init, base=CanvasLayer)]
 pub struct DialogGUI {
     tween: Option<Gd<Tween>>,
-    pub track: Option<DialogTrack>,
+    pub track: Option<Vec<Line>>,
     character_label: Option<Gd<Label>>,
     dialog_text: Option<Gd<RichTextLabel>>,
+    current_index: usize,
     #[base]
     base: Base<CanvasLayer>,
 }
@@ -34,10 +32,12 @@ impl ICanvasLayer for DialogGUI {
 
     fn ready(&mut self) {
         self.create_structure();
-        if let Some(track) = self.track.clone() {
-            if let Some(line) = track.lines.first() {
-                self.load_line(line);
-            }
+        if let Some(line) = self.get_next_text_line() {
+            self.load_line(&line);
+        } else {
+            godot_warn!(
+                "No text nodes found in dialog track on load. Something must have gone wrong?"
+            );
         }
     }
 
@@ -137,8 +137,12 @@ impl DialogGUI {
         }
         let Some(tween) = &mut SquigglesUtil::create_tween(
             &mut self.to_gd().upcast(),
-            Some(EaseType::EASE_OUT),
-            Some(TransitionType::TRANS_BOUNCE),
+            Some(EaseType::from_ord(
+                settings.bind().anim_appear_ease.get_property(),
+            )),
+            Some(TransitionType::from_ord(
+                settings.bind().anim_appear_trans.get_property(),
+            )),
         ) else {
             godot_warn!("Failed to create tween for DialogGUI");
             return;
@@ -156,7 +160,7 @@ impl DialogGUI {
             margin.upcast(),
             NodePath::from("position:y"),
             margin_pos.y.to_variant(),
-            1f64,
+            settings.bind().anim_appear_duration as f64,
         );
     }
 
@@ -188,6 +192,40 @@ impl DialogGUI {
                 godot_warn!("DialogGUI does not handle Line of type: {:#?}", track);
             }
         }
+    }
+
+    fn get_next_text_line(&mut self) -> Option<Line> {
+        let Some(track) = &mut self.track else {
+            return None;
+        };
+        track.reverse();
+        #[allow(unused_variables)]
+        while let Some(line) = track.pop() {
+            let result: Option<Line> = match line.clone() {
+                Line::Text { text, character } => Some(line),
+                Line::Choice {
+                    prompt,
+                    character,
+                    options,
+                } => Some(line),
+                Line::Action { action } => {
+                    CoreDialog::singleton().bind_mut().handle_line_action(&line);
+                    continue;
+                }
+                Line::Signal { name, args } => {
+                    CoreDialog::singleton().bind_mut().handle_line_action(&line);
+                    continue;
+                }
+                Line::None => continue,
+            };
+            if result.is_some() {
+                if !track.is_empty() {
+                    track.reverse();
+                }
+                return result;
+            }
+        }
+        None
     }
 }
 

@@ -1,10 +1,15 @@
-use godot::{engine::Engine, prelude::*};
+use godot::{
+    engine::{Engine, Json},
+    prelude::*,
+};
 
 use crate::util::SquigglesUtil;
 
 use super::{
+    dialog_blackboard::Blackboard,
+    dialog_events::DialogEvents,
     dialog_gui::{DialogGUI, DialogSettings},
-    dialog_track::{DialogError, DialogTrack},
+    dialog_track::{DialogError, DialogTrack, Line},
 };
 
 #[derive(GodotClass)]
@@ -15,7 +20,10 @@ pub struct CoreDialog {
     current_line_index: i32,
     #[var]
     override_settings: Option<Gd<DialogSettings>>,
+    #[var]
+    event_bus: Option<Gd<DialogEvents>>,
     gui: Option<Gd<DialogGUI>>,
+    pub blackboard: Blackboard,
     #[base]
     base: Base<Object>,
 }
@@ -25,20 +33,31 @@ impl IObject for CoreDialog {}
 
 #[godot_api]
 impl CoreDialog {
-    pub const SIGNAL_TRACK_STARTED: &'static str = "track_started";
-    pub const SIGNAL_TRACK_ENDED: &'static str = "track_ended";
-    pub const SIGNAL_TRACK_SIGNAL: &'static str = "track_signal";
     pub const SINGLETON_NAME: &'static str = "CoreDialog";
 
-    #[signal]
-    fn track_ended(track: GString) {}
-    #[signal]
-    fn track_signal(name: GString, args: Array<Variant>) {}
-    #[signal]
-    fn track_started(track: GString) {}
+    #[func]
+    pub fn init_event_bus(&mut self) {
+        if self.event_bus.is_some() {
+            godot_warn!("No need to call init_event_bus! Already initialized!");
+            return;
+        }
+        let Some(tree) = SquigglesUtil::get_scene_tree_global() else {
+            godot_warn!("Failed to find SceneTree when initializing event bus");
+            return;
+        };
+        let Some(root) = &mut tree.get_root() else {
+            return;
+        };
+        let event_bus = DialogEvents::alloc_gd();
+        self.event_bus = Some(event_bus.clone());
+        root.call_deferred(StringName::from("add_child"), &[event_bus.to_variant()]);
+    }
 
     #[func]
     pub fn load_track(&mut self, file_path: GString) {
+        if self.event_bus.is_none() {
+            self.init_event_bus();
+        }
         // ensure is in tree
         let Some(tree) = SquigglesUtil::get_scene_tree_global() else {
             godot_warn!("failed to load godot scene tree for CoreDialog");
@@ -65,14 +84,55 @@ impl CoreDialog {
 
         // create and add GUI
         let mut gui = DialogGUI::alloc_gd();
-        gui.bind_mut().track = Some(track.clone());
+        gui.bind_mut().track = Some(track.lines.clone());
         SquigglesUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
     }
 
     fn handle_dialog_error(err: DialogError) {
-        let reason = format!("{:#?}", err);
-        godot_error!("DialogError: {}", reason);
-        // godot_print!("DialogError : {}", reason);
+        godot_error!("DialogError: {:#?}", err);
+    }
+
+    pub fn handle_line_action(&mut self, line: &Line) {
+        if self.event_bus.is_none() {
+            self.init_event_bus();
+        }
+        match line {
+            Line::Action { action } => self.blackboard.parse_action(action.clone()),
+            Line::Signal { name, args } => {
+                let Some(bus) = &mut self.event_bus else {
+                    return;
+                };
+                bus.emit_signal(
+                    StringName::from(DialogEvents::SIGNAL_TRACK_SIGNAL),
+                    &[
+                        name.to_variant(),
+                        Array::from_iter(args.iter().map(|s| Json::parse_string(s.to_godot())))
+                            .to_variant(),
+                    ],
+                );
+            }
+            _ => (),
+        }
+    }
+
+    pub fn handle_line_query(&mut self, query: String) -> bool {
+        self.blackboard.parse_query(query)
+    }
+
+    #[func]
+    pub fn blackboard_action(&mut self, action: GString) {
+        self.blackboard.parse_action(action.to_string());
+    }
+
+    #[func]
+    pub fn blackboard_query(&mut self, query: GString) -> bool {
+        self.blackboard.parse_query(query.to_string())
+    }
+
+    #[func]
+    pub fn blackboard_debug_dump(&self) {
+        godot_print!("{:#?}", self.blackboard);
+        // self.blackboard.debug_print();
     }
 
     pub fn singleton() -> Gd<CoreDialog> {

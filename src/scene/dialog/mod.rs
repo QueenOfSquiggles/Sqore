@@ -1,6 +1,8 @@
 use self::dialog_manager::CoreDialog;
 use godot::{engine::Engine, prelude::*};
 
+pub mod dialog_blackboard;
+pub mod dialog_events;
 pub mod dialog_gui;
 pub mod dialog_manager;
 pub mod dialog_track;
