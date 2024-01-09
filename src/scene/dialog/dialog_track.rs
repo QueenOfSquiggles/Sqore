@@ -20,7 +20,7 @@ impl DialogTrack {
         };
         let text = file.get_as_text();
 
-        let mut json = Json::new();
+        let mut json = Json::new_gd();
         json.parse(text.clone());
         let err_msg = json.get_error_message();
         if !err_msg.is_empty() {

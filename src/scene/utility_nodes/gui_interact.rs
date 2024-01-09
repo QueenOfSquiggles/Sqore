@@ -29,11 +29,11 @@ impl INode for GuiInteract {
         // load audio stream player
         let player = AudioStreamPlayer::new_alloc();
         self.audio_player = Some(player.clone());
-        self.base.add_child(player.upcast());
+        self.base_mut().add_child(player.upcast());
         // TODO: use a global setting to assign the audio bus and volume
 
         // get parent
-        let Some(node_parent) = self.base.get_parent() else {
+        let Some(node_parent) = self.base().get_parent() else {
             return;
         };
         let rcast: Result<Gd<Control>, _> = node_parent.try_cast();
@@ -62,7 +62,7 @@ impl INode for GuiInteract {
 impl GuiInteract {
     #[func]
     fn on_visiblity_changed(&mut self) {
-        if let Some(node_parent) = self.base.get_parent() {
+        if let Some(node_parent) = self.base().get_parent() {
             let rcast: Result<Gd<Control>, _> = node_parent.try_cast();
             if let Ok(parent) = rcast {
                 if parent.is_visible() {
@@ -79,7 +79,7 @@ impl GuiInteract {
     #[func]
     fn on_mouse_enter(&mut self) {
         // get parent
-        let Some(node_parent) = self.base.get_parent() else {
+        let Some(node_parent) = self.base().get_parent() else {
             return;
         };
         let rcast: Result<Gd<Control>, _> = node_parent.try_cast();

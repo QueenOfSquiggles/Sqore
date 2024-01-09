@@ -35,8 +35,8 @@ impl IWorldEnvironment for WorldEnvironmentSettingsCompliant {
 #[godot_api]
 impl WorldEnvironmentSettingsCompliant {
     fn on_graphics_settings_changed(&mut self) {
-        let option_env = self.base.get_environment();
-        let mut env = Environment::new();
+        let option_env = self.base().get_environment();
+        let mut env = Environment::new_gd();
         if let Some(n_env) = option_env {
             env = n_env;
         }
@@ -59,7 +59,7 @@ impl WorldEnvironmentSettingsCompliant {
         env.set_adjustment_contrast(gfx.get_value_contrast());
         env.set_adjustment_saturation(gfx.get_value_saturation());
         env.set_tonemap_exposure(gfx.get_value_exposure());
-        if let Some(mut viewport) = self.base.get_viewport() {
+        if let Some(mut viewport) = self.base().get_viewport() {
             viewport.set_scaling_3d_mode(match gfx.get_scaling_algorithm() {
                 0 => Scaling3DMode::SCALING_3D_MODE_BILINEAR,
                 1 => Scaling3DMode::SCALING_3D_MODE_FSR,
@@ -67,6 +67,6 @@ impl WorldEnvironmentSettingsCompliant {
                 _ => unreachable!(),
             })
         }
-        self.base.set_environment(env);
+        self.base_mut().set_environment(env);
     }
 }

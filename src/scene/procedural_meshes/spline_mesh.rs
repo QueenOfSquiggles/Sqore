@@ -22,7 +22,7 @@
 //     #[func]
 //     pub fn generate_mesh(&mut self) {
 //         self.ensure_array_mesh();
-//         let Some(generic_mesh) = self.base.get_mesh() else {
+//         let Some(generic_mesh) = self.base().get_mesh() else {
 //             return;
 //         };
 //         let array_mesh_cast: Result<Gd<ArrayMesh>, _> = generic_mesh.try_cast();
@@ -45,7 +45,7 @@
 //         let points = spline.get_baked_points();
 //         let tilts = spline.get_baked_tilts();
 //         let ups = spline.get_baked_up_vectors();
-//         let data = MeshDataTool::new();
+//         let data = MeshDataTool::new_gd();
 //         for (index, value) in points.as_slice().iter().enumerate() {
 //             let tilt = tilts.as_slice()[index];
 //             let up = ups.as_slice()[index];
@@ -53,13 +53,13 @@
 //     }
 
 //     fn ensure_array_mesh(&mut self) {
-//         if self.base.get_mesh().is_none() {
-//             self.base.set_mesh(ArrayMesh::new().upcast());
+//         if self.base().get_mesh().is_none() {
+//             self.base().set_mesh(ArrayMesh::new_gd().upcast());
 //             return;
 //         }
-//         let arr_cast: Result<Gd<ArrayMesh>, _> = self.base.get_mesh().unwrap().try_cast();
+//         let arr_cast: Result<Gd<ArrayMesh>, _> = self.base().get_mesh().unwrap().try_cast();
 //         let Ok(_) = arr_cast else {
-//             self.base.set_mesh(ArrayMesh::new().upcast());
+//             self.base().set_mesh(ArrayMesh::new_gd().upcast());
 //             return;
 //         };
 //     }

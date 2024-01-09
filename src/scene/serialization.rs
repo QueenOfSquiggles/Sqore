@@ -47,7 +47,7 @@ pub impl SaveDataBuilder {
 
     #[func]
     pub fn get_child_builder(&mut self, key: GString) -> Gd<SaveDataBuilder> {
-        let mut n_builder = SaveDataBuilder::alloc_gd();
+        let mut n_builder = SaveDataBuilder::new_alloc();
         if let Some(child) = self.child_builders.get_mut(&key) {
             n_builder = child.clone();
         } else {
@@ -97,7 +97,7 @@ pub impl SaveDataBuilder {
 
     #[func]
     pub fn load_from(dict: Dictionary) -> Gd<SaveDataBuilder> {
-        let mut data = SaveDataBuilder::alloc_gd();
+        let mut data = SaveDataBuilder::new_alloc();
         for entry in dict.iter_shared() {
             let skey = GString::from_variant(&entry.0);
             if skey.to_string().starts_with(INTERNAL_PREFIX) {
@@ -120,7 +120,7 @@ pub impl SaveDataBuilder {
     }
 
     pub fn try_load_file(file_path: GString) -> Option<Gd<SaveDataBuilder>> {
-        let mut result = SaveDataBuilder::alloc_gd();
+        let mut result = SaveDataBuilder::new_alloc();
         if !result.bind_mut().load(file_path) {
             None
         } else {

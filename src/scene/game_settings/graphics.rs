@@ -81,7 +81,7 @@ impl GameGraphicsSettings {
 		);
 
         // emit signal out
-        self.base
+        self.base_mut()
             .emit_signal(StringName::from("graphics_changed"), &[]);
     }
 }
@@ -90,7 +90,7 @@ const GRAPHICS_SAVE_PATH: &str = "user://core/graphics.json";
 
 impl SquigglesSerialized for GameGraphicsSettings {
     fn serialize(&mut self) {
-        let mut save = SaveDataBuilder::alloc_gd();
+        let mut save = SaveDataBuilder::new_alloc();
         let mut bind = save.bind_mut();
         bind.set_value("use_ssao".to_godot(), self.use_ssao.to_variant());
         bind.set_value("use_bloom".to_godot(), self.use_bloom.to_variant());

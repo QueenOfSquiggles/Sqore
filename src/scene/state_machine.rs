@@ -1,12 +1,11 @@
 use godot::prelude::*;
-use once_cell::sync::Lazy;
 
-static METHOD_TICK: Lazy<StringName> = Lazy::new(|| StringName::from("tick"));
-static METHOD_ON_ENTER: Lazy<StringName> = Lazy::new(|| StringName::from("on_enter"));
-static METHOD_ON_EXIT: Lazy<StringName> = Lazy::new(|| StringName::from("on_exit"));
+const METHOD_TICK: &'static str = "tick";
+const METHOD_ON_ENTER: &'static str = "on_enter";
+const METHOD_ON_EXIT: &'static str = "on_exit";
 
 #[repr(i32)]
-#[derive(Property, PartialEq, Eq, Debug, Default, Export)]
+#[derive(Var, PartialEq, Eq, Debug, Default, Export, Clone)]
 enum TickMode {
     #[default]
     Process = 0,
@@ -38,11 +37,12 @@ struct FiniteSubStateMachine {
 #[godot_api]
 impl INode for FiniteStateMachine {
     fn ready(&mut self) {
-        self.base.set_process(self.tick_mode == TickMode::Process);
-        self.base
-            .set_physics_process(self.tick_mode == TickMode::PhysicsProcess);
+        let tick_mode = self.tick_mode.clone();
+        self.base_mut().set_process(tick_mode == TickMode::Process);
+        self.base_mut()
+            .set_physics_process(tick_mode == TickMode::PhysicsProcess);
         if let Some(mut curr) = self.current.clone() {
-            curr.call(METHOD_ON_ENTER.clone(), &[]);
+            curr.call(StringName::from(METHOD_ON_ENTER), &[]);
         }
     }
     fn process(&mut self, delta: f64) {
@@ -58,18 +58,18 @@ impl FiniteStateMachine {
     #[func]
     fn do_tick(&mut self, delta: f64) {
         if let Some(mut state) = self.current.clone() {
-            state.call_deferred(METHOD_TICK.clone(), &[delta.to_variant()]);
+            state.call_deferred(StringName::from(METHOD_TICK), &[delta.to_variant()]);
         }
     }
 
     #[func]
     fn push_state(&mut self, n_state: Option<Gd<Node>>) {
         if let Some(mut prev) = self.current.clone() {
-            prev.call(METHOD_ON_EXIT.clone(), &[]);
+            prev.call(StringName::from(METHOD_ON_EXIT), &[]);
         }
         self.current = n_state;
         if let Some(mut now) = self.current.clone() {
-            now.call(METHOD_ON_ENTER.clone(), &[]);
+            now.call(StringName::from(METHOD_ON_ENTER), &[]);
         }
     }
 }
@@ -94,25 +94,25 @@ impl FiniteSubStateMachine {
     #[func]
     fn on_enter(&mut self) {
         if let Some(mut curr) = self.current.clone() {
-            curr.call(METHOD_ON_ENTER.clone(), &[]);
+            curr.call(StringName::from(METHOD_ON_ENTER), &[]);
         }
     }
 
     #[func]
     fn tick(&mut self, delta: f64) {
         if let Some(mut state) = self.current.clone() {
-            state.call(METHOD_TICK.clone(), &[delta.to_variant()]);
+            state.call(StringName::from(METHOD_TICK), &[delta.to_variant()]);
         }
     }
 
     #[func]
     fn push_state(&mut self, n_state: Option<Gd<Node>>) {
         if let Some(mut prev) = self.current.clone() {
-            prev.call(METHOD_ON_EXIT.clone(), &[]);
+            prev.call(StringName::from(METHOD_ON_EXIT), &[]);
         }
         self.current = n_state;
         if let Some(mut now) = self.current.clone() {
-            now.call(METHOD_ON_ENTER.clone(), &[]);
+            now.call(StringName::from(METHOD_ON_ENTER), &[]);
         }
     }
 }

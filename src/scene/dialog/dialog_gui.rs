@@ -1,22 +1,24 @@
+use std::collections::VecDeque;
+
 use godot::{
     engine::{
         control::{LayoutPreset, SizeFlags},
         tween::{EaseType, TransitionType},
-        CanvasLayer, HSeparator, ICanvasLayer, InputEvent, Label, LabelSettings, MarginContainer,
-        PanelContainer, RichTextLabel, Tween, VBoxContainer,
+        CanvasLayer, Control, HSeparator, ICanvasLayer, InputEvent, Label, LabelSettings,
+        MarginContainer, PanelContainer, RichTextLabel, Tween, VBoxContainer,
     },
     prelude::*,
 };
 
 use crate::{scene::game_globals::CoreGlobals, util::SquigglesUtil};
 
-use super::{dialog_manager::CoreDialog, dialog_track::Line};
+use super::{core_dialog::CoreDialog, dialog_events::DialogEvents, dialog_track::Line};
 
 #[derive(GodotClass)]
 #[class(init, base=CanvasLayer)]
 pub struct DialogGUI {
     tween: Option<Gd<Tween>>,
-    pub track: Option<Vec<Line>>,
+    pub track: Option<VecDeque<Line>>,
     character_label: Option<Gd<Label>>,
     dialog_text: Option<Gd<RichTextLabel>>,
     current_index: usize,
@@ -41,10 +43,55 @@ impl ICanvasLayer for DialogGUI {
         }
     }
 
-    fn input(&mut self, _event: Gd<InputEvent>) {}
+    fn input(&mut self, event: Gd<InputEvent>) {
+        let settings = self.get_settings();
+        if !event.is_action_pressed(StringName::from(settings.bind().interact_action.clone())) {
+            return;
+        }
+        let Some(margin) = self.base().get_child(0) else {
+            godot_error!("Failed to access child of DialogGUI!");
+            return;
+        };
+        let margin = margin.cast::<Control>();
+        godot_print!("Margin position: {:#}", margin.get_position());
+
+        let mut progress_next_node_flag = true;
+        if let Some(tween) = &mut self.tween {
+            if tween.is_running() {
+                // forces tween to finish (should usually only run once)
+                while tween.custom_step(10f64) {}
+                self.tween = None;
+                progress_next_node_flag = false;
+            }
+        }
+        if progress_next_node_flag {
+            if let Some(line) = self.get_next_text_line() {
+                self.load_line(&line);
+            } else {
+                let settings = self.get_settings();
+                let mut tween = self.get_text_tween(
+                    settings.bind().anim_hide_ease.clone(),
+                    settings.bind().anim_hide_trans.clone(),
+                );
+                let margin_size = margin.get_size();
+                let margin_pos = margin.get_position();
+
+                tween.tween_property(
+                    margin.upcast(),
+                    NodePath::from("position:y"),
+                    (margin_pos.y + margin_size.y).to_variant(),
+                    settings.bind().get_anim_hide_duration() as f64,
+                );
+                tween.tween_callback(Callable::from_object_method(&self.to_gd(), "queue_free"));
+            }
+        }
+    }
 
     fn exit_tree(&mut self) {
         //pass
+        if let Some(event_bus) = &mut CoreDialog::singleton().bind().get_event_bus() {
+            event_bus.emit_signal(StringName::from(DialogEvents::SIGNAL_TRACK_ENDED), &[]);
+        }
     }
 }
 
@@ -61,19 +108,7 @@ impl DialogGUI {
         | | | | | RichTextLabel (self.dialog_text)
         */
         // load settings
-        let settings = CoreDialog::singleton()
-            .bind()
-            .get_override_settings()
-            .unwrap_or(
-                CoreGlobals::singleton()
-                    .bind()
-                    .get_config()
-                    .bind()
-                    .get_dialog()
-                    .unwrap_or(DialogSettings::new_gd()),
-            );
-
-        // create instances.
+        let settings = self.get_settings(); // create instances.
         let mut margin = MarginContainer::new_alloc();
         let mut panel = PanelContainer::new_alloc();
         let mut panel_margin = MarginContainer::new_alloc();
@@ -89,7 +124,7 @@ impl DialogGUI {
         panel_margin.add_child(vbox.upcast());
         panel.add_child(panel_margin.clone().upcast());
         margin.add_child(panel.clone().upcast());
-        self.base.add_child(margin.clone().upcast());
+        self.base_mut().add_child(margin.clone().upcast());
         self.character_label = Some(label.clone());
         self.dialog_text = Some(rich_text.clone());
 
@@ -110,45 +145,25 @@ impl DialogGUI {
         rich_text.add_theme_font_size_override(StringName::from("mono_font_size"), font_size);
 
         panel.set_custom_minimum_size(Vector2 {
-            x: 0f32,     // x size managed by container
+            x: 360.0f32, // x size managed by container
             y: 240.0f32, // push min size up
         });
 
-        let panel_box = 32;
-        panel_margin.add_theme_constant_override(StringName::from("margin_bottom"), panel_box);
-        panel_margin.add_theme_constant_override(StringName::from("margin_top"), panel_box);
-        panel_margin.add_theme_constant_override(StringName::from("margin_left"), panel_box);
-        panel_margin.add_theme_constant_override(StringName::from("margin_right"), panel_box);
+        const PANEL_BOX: i32 = 32;
+        panel_margin.add_theme_constant_override(StringName::from("margin_bottom"), PANEL_BOX);
+        panel_margin.add_theme_constant_override(StringName::from("margin_top"), PANEL_BOX);
+        panel_margin.add_theme_constant_override(StringName::from("margin_left"), PANEL_BOX);
+        panel_margin.add_theme_constant_override(StringName::from("margin_right"), PANEL_BOX);
 
-        margin.set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_WIDE);
-        let margin_lr: (i32, i32) = match settings.bind().dialog_align {
-            DialogAlign::Left => (32, 256),
-            DialogAlign::Right => (256, 32),
-            DialogAlign::Center => (256, 256),
-            DialogAlign::FullWide => (32, 32),
-        };
+        let margin_lr = settings.bind().dialog_align.get_margins();
+        const BOTTOM_MARGIN: i32 = 32;
         margin.add_theme_constant_override(StringName::from("margin_left"), margin_lr.0);
         margin.add_theme_constant_override(StringName::from("margin_right"), margin_lr.1);
-        margin.add_theme_constant_override(StringName::from("margin_bottom"), 32);
-
-        // Handle Tween Creation
-        if let Some(tw) = &mut self.tween {
-            tw.kill();
-        }
-        let Some(tween) = &mut SquigglesUtil::create_tween(
-            &mut self.to_gd().upcast(),
-            Some(EaseType::from_ord(
-                settings.bind().anim_appear_ease.get_property(),
-            )),
-            Some(TransitionType::from_ord(
-                settings.bind().anim_appear_trans.get_property(),
-            )),
-        ) else {
-            godot_warn!("Failed to create tween for DialogGUI");
-            return;
-        };
-        self.tween = Some(tween.clone());
-
+        margin.add_theme_constant_override(StringName::from("margin_bottom"), BOTTOM_MARGIN);
+        margin.set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_WIDE);
+        margin.force_update_transform();
+        /*
+        	*/
         // Animation
         let margin_size = margin.get_size();
         let margin_pos = margin.get_position();
@@ -156,6 +171,23 @@ impl DialogGUI {
             x: margin_pos.x,
             y: margin_pos.y + margin_size.y,
         });
+        // Handle Tween Creation
+        let Some(tween) = &mut self.to_gd().create_tween() else {
+            return;
+        };
+        //         Some(EaseType::from_ord(ease.get_property())),
+        // Some(TransitionType::from_ord(trans.get_property())),
+
+        let mut tween = tween
+            .set_trans(TransitionType::from_ord(
+                settings.bind().anim_appear_ease.get_property(),
+            ))
+            .unwrap();
+        let mut tween = tween
+            .set_ease(EaseType::from_ord(
+                settings.bind().anim_appear_ease.get_property(),
+            ))
+            .unwrap();
         tween.tween_property(
             margin.upcast(),
             NodePath::from("position:y"),
@@ -186,21 +218,34 @@ impl DialogGUI {
                 if let Some(character_label) = &mut self.character_label {
                     character_label.set_text(character.to_godot());
                 }
+                godot_warn!("Choice dialog nodes not currently implemented")
                 // TODO: add options
             }
             _ => {
                 godot_warn!("DialogGUI does not handle Line of type: {:#?}", track);
             }
         }
+        let mut tween = self.get_text_tween(EEaseType::InOut, ETransType::Linear);
+        let Some(text) = &mut self.dialog_text else {
+            return;
+        };
+        // TODO: replace magic numbers
+        text.set_visible_ratio(0f32);
+        tween.tween_property(
+            text.clone().upcast(),
+            NodePath::from("visible_ratio"),
+            1f32.to_variant(),
+            1f64,
+        );
     }
 
     fn get_next_text_line(&mut self) -> Option<Line> {
         let Some(track) = &mut self.track else {
             return None;
         };
-        track.reverse();
         #[allow(unused_variables)]
-        while let Some(line) = track.pop() {
+        while let Some(line) = track.pop_front() {
+            godot_print!("DialogGUI processing line {:#?}", line);
             let result: Option<Line> = match line.clone() {
                 Line::Text { text, character } => Some(line),
                 Line::Choice {
@@ -219,18 +264,48 @@ impl DialogGUI {
                 Line::None => continue,
             };
             if result.is_some() {
-                if !track.is_empty() {
-                    track.reverse();
-                }
                 return result;
             }
         }
         None
     }
+
+    fn get_text_tween(&mut self, ease: EEaseType, trans: ETransType) -> Gd<Tween> {
+        if let Some(tw) = &mut self.tween {
+            godot_print!("Killing current tween!");
+            tw.kill();
+        }
+        if let Some(tween) = &mut SquigglesUtil::create_tween(
+            &mut self.to_gd().upcast(),
+            Some(EaseType::from_ord(ease.get_property())),
+            Some(TransitionType::from_ord(trans.get_property())),
+        ) {
+            self.tween = Some(tween.clone());
+            return tween.clone();
+        };
+        godot_warn!("Failed to create tween for DialogGUI");
+        let tween = self.base_mut().create_tween().unwrap();
+        self.tween = Some(tween.clone());
+        tween
+    }
+
+    fn get_settings(&self) -> Gd<DialogSettings> {
+        CoreDialog::singleton()
+            .bind()
+            .get_override_settings()
+            .unwrap_or(
+                CoreGlobals::singleton()
+                    .bind()
+                    .get_config()
+                    .bind()
+                    .get_dialog()
+                    .unwrap_or(DialogSettings::new_gd()),
+            )
+    }
 }
 
 #[repr(u32)]
-#[derive(Property, Default, Export)]
+#[derive(Var, Default, Export)]
 enum DialogAlign {
     Left = 0,
     Right = 1,
@@ -239,8 +314,19 @@ enum DialogAlign {
     FullWide = 3,
 }
 
+impl DialogAlign {
+    fn get_margins(&self) -> (i32, i32) {
+        match self {
+            DialogAlign::Left => (32, 256),
+            DialogAlign::Right => (256, 32),
+            DialogAlign::Center => (256, 256),
+            DialogAlign::FullWide => (32, 32),
+        }
+    }
+}
+
 #[repr(i32)]
-#[derive(Property, Default, Export)]
+#[derive(Var, Default, Export, Clone)]
 enum EEaseType {
     #[default]
     In = 0,
@@ -250,7 +336,7 @@ enum EEaseType {
 }
 
 #[repr(i32)]
-#[derive(Property, Default, Export)]
+#[derive(Var, Default, Export, Clone)]
 enum ETransType {
     #[default]
     Linear = 0,

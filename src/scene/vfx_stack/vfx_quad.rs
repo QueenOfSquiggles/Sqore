@@ -44,17 +44,18 @@ impl IMeshInstance3D for VFXQuad {
     fn init(base: Base<MeshInstance3D>) -> Self {
         Self {
             base,
-            vfx: ShaderMaterial::new(),
+            vfx: ShaderMaterial::new_gd(),
         }
     }
 
     fn ready(&mut self) {
-        self.base.set_mesh(QuadMesh::new().upcast());
+        self.base_mut().set_mesh(QuadMesh::new_gd().upcast());
         CoreGlobals::singleton().connect(
             StringName::from(CoreGlobals::SIGNAL_VFX_STACK_CHANGED),
-            Callable::from_object_method(&self.base, Self::CALLABLE_REFRESH_VFX_STACK),
+            Callable::from_object_method(&self.base(), Self::CALLABLE_REFRESH_VFX_STACK),
         );
-        self.base.set_material_override(self.vfx.clone().upcast());
+        let vfx = self.vfx.clone().upcast();
+        self.base_mut().set_material_override(vfx);
         self.refresh_vfx_stack();
     }
 }

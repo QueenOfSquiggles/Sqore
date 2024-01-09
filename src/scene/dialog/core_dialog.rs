@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use godot::{
     engine::{Engine, Json},
     prelude::*,
@@ -48,7 +50,7 @@ impl CoreDialog {
         let Some(root) = &mut tree.get_root() else {
             return;
         };
-        let event_bus = DialogEvents::alloc_gd();
+        let event_bus = DialogEvents::new_alloc();
         self.event_bus = Some(event_bus.clone());
         root.call_deferred(StringName::from("add_child"), &[event_bus.to_variant()]);
     }
@@ -83,8 +85,9 @@ impl CoreDialog {
         }
 
         // create and add GUI
-        let mut gui = DialogGUI::alloc_gd();
-        gui.bind_mut().track = Some(track.lines.clone());
+        let mut gui = DialogGUI::new_alloc();
+
+        gui.bind_mut().track = Some(VecDeque::from_iter(track.lines.clone().into_iter()));
         SquigglesUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
     }
 

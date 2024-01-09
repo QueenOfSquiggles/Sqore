@@ -3,7 +3,6 @@ use godot::{
     engine::*,
     prelude::*,
 };
-use once_cell::sync::Lazy;
 
 use crate::{
     scene::camera::{CameraBrain3D, CAMERA_BRAIN_GROUP},
@@ -15,17 +14,17 @@ const PROJECT_SETTINGS_NAMESPACE: &str = "addons/squiggles_core/";
 const S_LOADERS: &str = "loaders";
 const S_GAME_SETTINGS: &str = "game_settings";
 
-pub static SINGLETON_CORE_GLOBALS: Lazy<StringName> = Lazy::new(|| StringName::from("CoreGlobals"));
+pub const SINGLETON_CORE_GLOBALS: &'static str = "CoreGlobals";
 
 pub fn register_singleton() {
     Engine::singleton().register_singleton(
-        SINGLETON_CORE_GLOBALS.clone(),
-        CoreGlobals::alloc_gd().upcast(),
+        StringName::from(SINGLETON_CORE_GLOBALS),
+        CoreGlobals::new_alloc().upcast(),
     );
 }
 
 pub fn unregister_singleton() {
-    Engine::singleton().unregister_singleton(SINGLETON_CORE_GLOBALS.clone());
+    Engine::singleton().unregister_singleton(StringName::from(SINGLETON_CORE_GLOBALS));
 }
 
 fn get_setting_name(name: &str) -> GString {
@@ -151,7 +150,7 @@ impl CoreGlobals {
     }
 
     pub fn singleton() -> Gd<CoreGlobals> {
-        let Some(vol) = Engine::singleton().get_singleton(SINGLETON_CORE_GLOBALS.clone()) else {
+        let Some(vol) = Engine::singleton().get_singleton(SINGLETON_CORE_GLOBALS.into()) else {
             panic!("Failed to find engine singleton for CoreGlobals. You must access this after it is registered!");
         };
         let res_core: Result<Gd<CoreGlobals>, Gd<_>> = vol.try_cast();

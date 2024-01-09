@@ -2,17 +2,16 @@ use godot::engine::{
     Area3D, CharacterBody3D, IArea3D, IRayCast3D, RayCast3D, RigidBody3D, StaticBody3D,
 };
 use godot::prelude::*;
-use once_cell::sync::Lazy;
 
 // these are accessed by calling .clone(). Normally I'd dislike this, but StringName is ref-counted so duplicating it is almost completely free
-static METHOD_SELECT: Lazy<StringName> = Lazy::new(|| StringName::from("on_select"));
-static METHOD_DESELECT: Lazy<StringName> = Lazy::new(|| StringName::from("on_deselect"));
-static METHOD_INTERACT: Lazy<StringName> = Lazy::new(|| StringName::from("interact"));
+const METHOD_SELECT: &'static str = "on_select";
+const METHOD_DESELECT: &'static str = "on_deselect";
+const METHOD_INTERACT: &'static str = "interact";
 
-static SIGNAL_ON_INTERACT: Lazy<StringName> = Lazy::new(|| StringName::from("on_interacted"));
-static SIGNAL_CAN_INTERACT: Lazy<StringName> = Lazy::new(|| StringName::from("can_interact"));
-static SIGNAL_ON_SELECTED: Lazy<StringName> = Lazy::new(|| StringName::from("on_selected"));
-static SIGNAL_ON_DESELECTED: Lazy<StringName> = Lazy::new(|| StringName::from("on_deselected"));
+const SIGNAL_ON_INTERACT: &'static str = "on_interacted";
+const SIGNAL_CAN_INTERACT: &'static str = "can_interact";
+const SIGNAL_ON_SELECTED: &'static str = "on_selected";
+const SIGNAL_ON_DESELECTED: &'static str = "on_deselected";
 
 #[derive(GodotClass)]
 #[class(init, base=RayCast3D)]
@@ -108,14 +107,14 @@ impl InteractRaycast3D {
     #[func]
     fn do_interact(&mut self) {
         if let Some(mut target) = self.target.clone() {
-            target.call_deferred(METHOD_INTERACT.clone(), &[]);
+            target.call_deferred(StringName::from(METHOD_INTERACT), &[]);
         }
     }
 }
 #[godot_api]
 impl IRayCast3D for InteractRaycast3D {
     fn physics_process(&mut self, _delta: f64) {
-        if let Some(collider) = self.base.get_collider() {
+        if let Some(collider) = self.base().get_collider() {
             let mut option_typed: Result<Gd<Node3D>, Gd<Object>> = collider.try_cast();
             if let Ok(coll3d) = option_typed.as_mut() {
                 let mut in_group = self.filter_groups.is_empty();
@@ -126,7 +125,7 @@ impl IRayCast3D for InteractRaycast3D {
                     }
                 }
                 if in_group
-                    && coll3d.has_method(METHOD_INTERACT.clone())
+                    && coll3d.has_method(StringName::from(METHOD_INTERACT))
                     && is_active_interactable_object(coll3d.clone().upcast())
                 {
                     // valid object for interaction
@@ -135,8 +134,8 @@ impl IRayCast3D for InteractRaycast3D {
                         if !prev.is_instance_valid() {
                             has_changed = true;
                         } else if prev.instance_id_unchecked() != coll3d.instance_id_unchecked() {
-                            if prev.has_method(METHOD_DESELECT.clone()) {
-                                prev.call(METHOD_DESELECT.clone(), &[]);
+                            if prev.has_method(StringName::from(METHOD_DESELECT)) {
+                                prev.call(StringName::from(METHOD_DESELECT), &[]);
                             }
                             has_changed = true;
                         }
@@ -144,22 +143,24 @@ impl IRayCast3D for InteractRaycast3D {
                         has_changed = true;
                     }
                     if has_changed {
-                        if coll3d.has_method(METHOD_SELECT.clone()) {
-                            coll3d.call(METHOD_SELECT.clone(), &[]);
+                        if coll3d.has_method(StringName::from(METHOD_SELECT)) {
+                            coll3d.call(StringName::from(METHOD_SELECT), &[]);
                         }
                         self.target = Some(coll3d.to_owned());
-                        self.base
-                            .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[true.to_variant()]);
+                        self.base_mut().emit_signal(
+                            StringName::from(SIGNAL_CAN_INTERACT),
+                            &[true.to_variant()],
+                        );
                     }
                 }
             }
         } else if let Some(prev) = self.target.as_mut() {
-            if prev.is_instance_valid() && prev.has_method(METHOD_DESELECT.clone()) {
-                prev.call(METHOD_DESELECT.clone(), &[]);
+            if prev.is_instance_valid() && prev.has_method(StringName::from(METHOD_DESELECT)) {
+                prev.call(StringName::from(METHOD_DESELECT), &[]);
             }
             self.target = None;
-            self.base
-                .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[false.to_variant()]);
+            self.base_mut()
+                .emit_signal(StringName::from(SIGNAL_CAN_INTERACT), &[false.to_variant()]);
         }
     }
 }
@@ -171,7 +172,7 @@ impl InteractArea3D {
     #[func]
     fn do_interact(&mut self) {
         if let Some(target) = self.target.as_mut() {
-            target.call_deferred(METHOD_INTERACT.clone(), &[]);
+            target.call_deferred(METHOD_INTERACT.into(), &[]);
         }
     }
 }
@@ -180,8 +181,8 @@ impl InteractArea3D {
 impl IArea3D for InteractArea3D {
     fn physics_process(&mut self, _delta: f64) {
         let mut target_buffer: Array<Gd<Node3D>> = Array::new();
-        target_buffer.extend_array(self.base.get_overlapping_bodies());
-        let temp = self.base.get_overlapping_areas();
+        target_buffer.extend_array(self.base().get_overlapping_bodies());
+        let temp = self.base().get_overlapping_areas();
         for t in temp.iter_shared() {
             target_buffer.push(t.upcast());
         }
@@ -200,7 +201,7 @@ impl IArea3D for InteractArea3D {
                     break;
                 }
             }
-            if !in_group || !target.has_method(METHOD_INTERACT.clone()) {
+            if !in_group || !target.has_method(METHOD_INTERACT.into()) {
                 continue;
             }
             if !is_active_interactable_object(target.clone().upcast()) {
@@ -208,7 +209,7 @@ impl IArea3D for InteractArea3D {
             }
 
             let d = self
-                .base
+                .base()
                 .get_global_position()
                 .distance_squared_to(target.get_global_position());
             if d < dist {
@@ -220,24 +221,24 @@ impl IArea3D for InteractArea3D {
         if let Some(mut coll3d) = closest {
             if let Some(mut prev) = self.target.clone() {
                 if !prev.eq(&coll3d) {
-                    if prev.has_method(METHOD_DESELECT.clone()) {
-                        prev.call(METHOD_DESELECT.clone(), &[]);
+                    if prev.has_method(StringName::from(METHOD_DESELECT)) {
+                        prev.call(StringName::from(METHOD_DESELECT), &[]);
                     }
-                    if coll3d.has_method(METHOD_SELECT.clone()) {
-                        coll3d.call(METHOD_SELECT.clone(), &[]);
+                    if coll3d.has_method(StringName::from(METHOD_SELECT)) {
+                        coll3d.call(StringName::from(METHOD_SELECT), &[]);
                     }
                     self.target = Some(coll3d);
-                    self.base
-                        .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[true.to_variant()]);
+                    self.base_mut()
+                        .emit_signal(StringName::from(SIGNAL_CAN_INTERACT), &[true.to_variant()]);
                 }
             }
         } else if let Some(mut prev) = self.target.clone() {
-            if prev.has_method(METHOD_DESELECT.clone()) {
-                prev.call(METHOD_DESELECT.clone(), &[]);
+            if prev.has_method(StringName::from(METHOD_DESELECT)) {
+                prev.call(StringName::from(METHOD_DESELECT), &[]);
             }
             self.target = None;
-            self.base
-                .emit_signal(SIGNAL_CAN_INTERACT.clone(), &[false.to_variant()]);
+            self.base_mut()
+                .emit_signal(StringName::from(SIGNAL_CAN_INTERACT), &[false.to_variant()]);
         }
     }
 }
@@ -253,25 +254,28 @@ impl InteractionObjectArea3D {
 
     #[func]
     fn on_select(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_SELECTED), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_DESELECTED), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_INTERACT), &[]);
     }
 
     #[func]
@@ -296,25 +300,28 @@ impl InteractionObjectStaticBody3D {
 
     #[func]
     fn on_select(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_SELECTED), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_DESELECTED), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_INTERACT), &[]);
     }
     #[func]
     fn get_active(&self) -> bool {
@@ -338,25 +345,28 @@ impl InteractionObjectCharacterBody3D {
 
     #[func]
     fn on_select(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_SELECTED), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_DESELECTED), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_INTERACT), &[]);
     }
     #[func]
     fn get_active(&self) -> bool {
@@ -380,25 +390,28 @@ impl InteractionObjectRigidBody3D {
 
     #[func]
     fn on_select(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_SELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_SELECTED), &[]);
     }
     #[func]
     fn on_deselect(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_DESELECTED.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_DESELECTED), &[]);
     }
 
     #[func]
     fn interact(&mut self) {
-        if !self.base.is_inside_tree() {
+        if !self.base().is_inside_tree() {
             return;
         }
-        self.base.emit_signal(SIGNAL_ON_INTERACT.clone(), &[]);
+        self.base_mut()
+            .emit_signal(StringName::from(SIGNAL_ON_INTERACT), &[]);
     }
 
     #[func]

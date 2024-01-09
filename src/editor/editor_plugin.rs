@@ -16,10 +16,10 @@ struct SquigglesCoreEditorUtils {
 impl IEditorPlugin for SquigglesCoreEditorUtils {
     fn enter_tree(&mut self) {
         let menu = PopupMenu::new_alloc();
-        self.base
+        self.base_mut()
             .add_tool_submenu_item("Squiggles Core".to_godot(), menu.clone());
         self.tool_items = Some(menu);
-        let Some(editor) = self.base.get_editor_interface() else {
+        let Some(editor) = self.base_mut().get_editor_interface() else {
             return;
         };
         let Some(mut cmd) = editor.get_command_palette() else {
@@ -58,7 +58,8 @@ impl SquigglesCoreEditorUtils {
             let index = menu_items.get_item_count() - 1;
             menu_items.set_item_tooltip(index, description.to_godot())
         }
-        self.base.add_tool_menu_item(fname.clone(), func.clone());
+        self.base_mut()
+            .add_tool_menu_item(fname.clone(), func.clone());
         command_palette.add_command(name.to_godot(), fname, func);
     }
 }

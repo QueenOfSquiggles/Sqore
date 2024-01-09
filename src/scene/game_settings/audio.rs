@@ -29,7 +29,7 @@ impl GameAudioSettings {}
 const AUDIO_SETTINGS_PATH: &str = "user://core/audio.json";
 impl SquigglesSerialized for GameAudioSettings {
     fn serialize(&mut self) {
-        let mut sb = SaveDataBuilder::alloc_gd();
+        let mut sb = SaveDataBuilder::new_alloc();
         let mut sbind = sb.bind_mut();
         sbind.set_value(
             "audio_db_limit".to_godot(),

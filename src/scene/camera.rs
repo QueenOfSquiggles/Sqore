@@ -24,7 +24,7 @@ impl ICamera3D for CameraBrain3D {
         }
     }
     fn ready(&mut self) {
-        self.base.add_to_group(CAMERA_BRAIN_GROUP.into());
+        self.base_mut().add_to_group(CAMERA_BRAIN_GROUP.into());
     }
 
     fn process(&mut self, delta: f64) {
@@ -32,12 +32,12 @@ impl ICamera3D for CameraBrain3D {
             let mut n_trans = vcam.get_global_transform();
             if vcam.bind().use_lerp && self.last_cam {
                 let factor = 1.0 / vcam.bind().lerp_speed;
-                n_trans = self.base.get_global_transform().interpolate_with(
+                n_trans = self.base().get_global_transform().interpolate_with(
                     vcam.get_global_transform(),
                     clampf(delta * (factor as f64), 0.0, 1.0) as f32,
                 );
             }
-            self.base.set_global_transform(n_trans);
+            self.base_mut().set_global_transform(n_trans);
             self.last_cam = true;
         } else if self.last_cam {
             self.last_cam = false;
@@ -103,7 +103,7 @@ impl IMarker3D for VirtualCamera3D {
 impl VirtualCamera3D {
     #[func]
     fn push(&mut self) {
-        if let Some(mut tree) = self.base.get_tree() {
+        if let Some(mut tree) = self.base().get_tree() {
             if let Some(brain_tree) = tree.get_first_node_in_group(CAMERA_BRAIN_GROUP.into()) {
                 let option_temp: Result<Gd<CameraBrain3D>, Gd<Node>> = brain_tree.try_cast();
                 if let Ok(mut brain) = option_temp {
@@ -115,7 +115,7 @@ impl VirtualCamera3D {
 
     #[func]
     fn pop(&mut self) {
-        if let Some(mut tree) = self.base.get_tree() {
+        if let Some(mut tree) = self.base().get_tree() {
             if let Some(brain_tree) = tree.get_first_node_in_group(CAMERA_BRAIN_GROUP.into()) {
                 let option_temp: Result<Gd<CameraBrain3D>, Gd<Node>> = brain_tree.try_cast();
                 if let Ok(mut brain) = option_temp {
