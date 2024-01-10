@@ -4,14 +4,14 @@ use godot::engine::{
 use godot::prelude::*;
 
 // these are accessed by calling .clone(). Normally I'd dislike this, but StringName is ref-counted so duplicating it is almost completely free
-const METHOD_SELECT: &'static str = "on_select";
-const METHOD_DESELECT: &'static str = "on_deselect";
-const METHOD_INTERACT: &'static str = "interact";
+const METHOD_SELECT: &str = "on_select";
+const METHOD_DESELECT: &str = "on_deselect";
+const METHOD_INTERACT: &str = "interact";
 
-const SIGNAL_ON_INTERACT: &'static str = "on_interacted";
-const SIGNAL_CAN_INTERACT: &'static str = "can_interact";
-const SIGNAL_ON_SELECTED: &'static str = "on_selected";
-const SIGNAL_ON_DESELECTED: &'static str = "on_deselected";
+const SIGNAL_ON_INTERACT: &str = "on_interacted";
+const SIGNAL_CAN_INTERACT: &str = "can_interact";
+const SIGNAL_ON_SELECTED: &str = "on_selected";
+const SIGNAL_ON_DESELECTED: &str = "on_deselected";
 
 #[derive(GodotClass)]
 #[class(init, base=RayCast3D)]

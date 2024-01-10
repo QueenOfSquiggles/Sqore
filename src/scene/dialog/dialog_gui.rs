@@ -3,8 +3,9 @@ use std::collections::VecDeque;
 use godot::{
     engine::{
         control::{LayoutPreset, SizeFlags},
+        object::ConnectFlags,
         tween::{EaseType, TransitionType},
-        CanvasLayer, Control, HSeparator, ICanvasLayer, InputEvent, Label, LabelSettings,
+        Button, CanvasLayer, Control, HSeparator, ICanvasLayer, InputEvent, Label, LabelSettings,
         MarginContainer, PanelContainer, RichTextLabel, Tween, VBoxContainer,
     },
     prelude::*,
@@ -12,7 +13,11 @@ use godot::{
 
 use crate::{scene::game_globals::CoreGlobals, util::SquigglesUtil};
 
-use super::{core_dialog::CoreDialog, dialog_events::DialogEvents, dialog_track::Line};
+use super::{
+    core_dialog::CoreDialog,
+    dialog_events::DialogEvents,
+    dialog_track::{ChoiceOptionEntry, Line},
+};
 
 #[derive(GodotClass)]
 #[class(init, base=CanvasLayer)]
@@ -21,6 +26,7 @@ pub struct DialogGUI {
     pub track: Option<VecDeque<Line>>,
     character_label: Option<Gd<Label>>,
     dialog_text: Option<Gd<RichTextLabel>>,
+    options_root: Option<Gd<Control>>,
     current_index: usize,
     #[base]
     base: Base<CanvasLayer>,
@@ -44,17 +50,14 @@ impl ICanvasLayer for DialogGUI {
     }
 
     fn input(&mut self, event: Gd<InputEvent>) {
+        if self.options_root.is_some() {
+            // means there is a dialog choice being made
+            return;
+        }
         let settings = self.get_settings();
         if !event.is_action_pressed(StringName::from(settings.bind().interact_action.clone())) {
             return;
         }
-        let Some(margin) = self.base().get_child(0) else {
-            godot_error!("Failed to access child of DialogGUI!");
-            return;
-        };
-        let margin = margin.cast::<Control>();
-        godot_print!("Margin position: {:#}", margin.get_position());
-
         let mut progress_next_node_flag = true;
         if let Some(tween) = &mut self.tween {
             if tween.is_running() {
@@ -65,25 +68,7 @@ impl ICanvasLayer for DialogGUI {
             }
         }
         if progress_next_node_flag {
-            if let Some(line) = self.get_next_text_line() {
-                self.load_line(&line);
-            } else {
-                let settings = self.get_settings();
-                let mut tween = self.get_text_tween(
-                    settings.bind().anim_hide_ease.clone(),
-                    settings.bind().anim_hide_trans.clone(),
-                );
-                let margin_size = margin.get_size();
-                let margin_pos = margin.get_position();
-
-                tween.tween_property(
-                    margin.upcast(),
-                    NodePath::from("position:y"),
-                    (margin_pos.y + margin_size.y).to_variant(),
-                    settings.bind().get_anim_hide_duration() as f64,
-                );
-                tween.tween_callback(Callable::from_object_method(&self.to_gd(), "queue_free"));
-            }
+            self.load_next_line();
         }
     }
 
@@ -95,7 +80,11 @@ impl ICanvasLayer for DialogGUI {
     }
 }
 
+#[godot_api]
 impl DialogGUI {
+    pub fn update_track(&mut self, n_track: VecDeque<Line>) {
+        self.track = Some(n_track);
+    }
     fn create_structure(&mut self) {
         /* INTENDED LAYOUT
         CanvasLayer (self.base)
@@ -195,6 +184,58 @@ impl DialogGUI {
             settings.bind().anim_appear_duration as f64,
         );
     }
+    /*
+        pub struct ChoiceOptionEntry {
+            text: String,
+            requires: String,
+            action: String,
+        }
+    */
+    fn create_options(&mut self, choices: &[ChoiceOptionEntry]) {
+        let mut root = VBoxContainer::new_alloc();
+        self.to_gd().add_child(root.clone().upcast());
+        self.options_root = Some(root.clone().upcast());
+
+        for (index, option) in choices.iter().enumerate() {
+            if !option.requires.is_empty()
+                && !CoreDialog::singleton()
+                    .bind_mut()
+                    .blackboard_query(option.requires.clone().into())
+            {
+                // does not meet conditions
+                continue;
+            }
+            let mut button = Button::new_alloc();
+            root.add_child(button.clone().upcast());
+            button.set_text(option.text.clone().into());
+            let action = option.action.clone();
+            button
+                .connect_ex(
+                    "pressed".into(),
+                    Callable::from_fn(
+                        format!("choice_button_{} ({})", index, option.text),
+                        move |_| {
+                            if !action.is_empty() {
+                                CoreDialog::singleton()
+                                    .bind_mut()
+                                    .blackboard_action(action.clone().into());
+                            }
+                            let Some(gui) = &mut CoreDialog::singleton().bind().gui.clone() else {
+                                godot_error!(
+                                    "Failed to find instance of the CoreDialog's DialogGUI"
+                                );
+                                return Err(());
+                            };
+                            gui.bind_mut().dialog_choice_was_made_callable(index);
+                            Ok(Variant::nil())
+                        },
+                    ),
+                )
+                .flags(ConnectFlags::CONNECT_DEFERRED.ord() as u32)
+                .done();
+        }
+        root.set_anchors_and_offsets_preset(LayoutPreset::PRESET_CENTER);
+    }
 
     pub fn load_line(&mut self, track: &Line) {
         match track {
@@ -218,8 +259,7 @@ impl DialogGUI {
                 if let Some(character_label) = &mut self.character_label {
                     character_label.set_text(character.to_godot());
                 }
-                godot_warn!("Choice dialog nodes not currently implemented")
-                // TODO: add options
+                self.create_options(options);
             }
             _ => {
                 godot_warn!("DialogGUI does not handle Line of type: {:#?}", track);
@@ -301,6 +341,58 @@ impl DialogGUI {
                     .get_dialog()
                     .unwrap_or(DialogSettings::new_gd()),
             )
+    }
+
+    fn dialog_choice_was_made_callable(&mut self, _index: usize) {
+        let Some(root) = &mut self.options_root.clone() else {
+            return;
+        };
+        root.queue_free();
+        self.options_root = None;
+        self.load_next_line();
+    }
+
+    #[func]
+    pub fn make_dialog_choice(&mut self, index: i32) -> bool {
+        let Some(root) = self.options_root.clone() else {
+            return false;
+        };
+        let Some(child) = root.get_child(index) else {
+            return false;
+        };
+        let Ok(child) = &mut child.try_cast::<Button>() else {
+            return false;
+        };
+        child.set_deferred("pressed".into(), true.to_variant());
+        true
+    }
+
+    fn load_next_line(&mut self) {
+        let Some(margin) = self.base().get_child(0) else {
+            godot_error!("Failed to access child of DialogGUI!");
+            return;
+        };
+        let margin = margin.cast::<Control>();
+
+        if let Some(line) = self.get_next_text_line() {
+            self.load_line(&line);
+        } else {
+            let settings = self.get_settings();
+            let mut tween = self.get_text_tween(
+                settings.bind().anim_hide_ease.clone(),
+                settings.bind().anim_hide_trans.clone(),
+            );
+            let margin_size = margin.get_size();
+            let margin_pos = margin.get_position();
+
+            tween.tween_property(
+                margin.upcast(),
+                NodePath::from("position:y"),
+                (margin_pos.y + margin_size.y).to_variant(),
+                settings.bind().get_anim_hide_duration() as f64,
+            );
+            tween.tween_callback(Callable::from_object_method(&self.to_gd(), "queue_free"));
+        }
     }
 }
 

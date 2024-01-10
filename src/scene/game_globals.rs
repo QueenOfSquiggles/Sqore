@@ -14,7 +14,7 @@ const PROJECT_SETTINGS_NAMESPACE: &str = "addons/squiggles_core/";
 const S_LOADERS: &str = "loaders";
 const S_GAME_SETTINGS: &str = "game_settings";
 
-pub const SINGLETON_CORE_GLOBALS: &'static str = "CoreGlobals";
+pub const SINGLETON_CORE_GLOBALS: &str = "CoreGlobals";
 
 pub fn register_singleton() {
     Engine::singleton().register_singleton(

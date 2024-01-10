@@ -1,18 +1,24 @@
 use core::fmt;
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap},
+    collections::{hash_map::DefaultHasher, HashMap, VecDeque},
     fmt::Display,
     hash::{Hash, Hasher},
+    rc::Rc,
 };
 
 use godot::{engine::Json, prelude::*};
 
 #[derive(Debug, PartialEq, Clone)]
-enum Entry {
+pub enum Entry {
     Number(f32),
     String(String),
     Bool(bool),
     None,
+}
+impl Default for Entry {
+    fn default() -> Self {
+        Self::None
+    }
 }
 impl Display for Entry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -25,37 +31,81 @@ impl Display for Entry {
     }
 }
 
-#[derive(Default)]
 pub struct Blackboard {
     entries: HashMap<String, Entry>,
+    commands: Vec<Command>,
+}
+
+impl Default for Blackboard {
+    fn default() -> Self {
+        let mut zelf = Self {
+            entries: HashMap::new(),
+            commands: Vec::new(),
+        };
+        zelf.commands.push(Command {
+            name: "set".into(),
+            args: 2,
+            callback: Rc::new(|bb, args| bb.set(args[0].as_str(), args[1].as_str())),
+        });
+        zelf.commands.push(Command {
+            name: "add".into(),
+            args: 2,
+            callback: Rc::new(|bb, args| bb.add(args[0].as_str(), args[1].as_str())),
+        });
+        zelf.commands.push(Command {
+            name: "sub".into(),
+            args: 2,
+            callback: Rc::new(|bb, args| bb.sub(args[0].as_str(), args[1].as_str())),
+        });
+        zelf.commands.push(Command {
+            name: "jump".into(),
+            args: 1,
+            callback: Rc::new(|bb, args| bb.jump(args[0].as_str())),
+        });
+        zelf.commands.push(Command {
+            name: "end".into(),
+            args: 0,
+            callback: Rc::new(|bb, _| bb.end()),
+        });
+        zelf
+    }
 }
 
 impl Blackboard {
-    const RECOGNIZED_COMMANDS: [&'static str; 3] = ["set", "add", "sub"];
     /// Parses the action string
     pub fn parse_action(&mut self, code: String) {
         // godot_print!("Running action(s): {}", code);
         for action in code.split(';') {
             // godot_print!("Running sub-action: {}", action);
-            let parts = Vec::from_iter(action.trim().splitn(3, ' '));
-            if parts.len() != 3 {
-                godot_warn!("Improperly formed dialog code \"{}\". Ignoring", action);
-                continue;
+            let mut parts = VecDeque::from_iter(action.trim().split(' ').map(|dirty| dirty.trim()));
+            let command = parts.pop_front().unwrap_or("");
+            let mut callback: Option<_> = None;
+            for cmd in self.commands.clone().iter() {
+                if cmd.name == command {
+                    if parts.len() == cmd.args {
+                        callback = Some(cmd.callback.clone());
+                        break;
+                    } else {
+                        godot_warn!(
+                            "Command \"{}\" requires \"{}\" arguments. Found {}. Code: {}",
+                            command,
+                            cmd.args,
+                            parts.len(),
+                            action
+                        );
+                    }
+                }
             }
-            let (command, key, value) = (parts[0].trim(), parts[1].trim(), parts[2].trim());
-            if !Self::RECOGNIZED_COMMANDS.contains(&command) {
+
+            if let Some(callable) = callback {
+                let parts = parts.iter().map(|v| v.to_string()).collect();
+                (callable)(self, parts);
+            } else {
                 godot_warn!(
                     "Unrecognized command! \"{}\" in line \"{}\"",
                     command,
                     action
                 );
-                continue;
-            }
-            match command {
-				"set" => self.set(key, value),
-                "add" => self.add(key, value),
-                "sub" => self.sub(key, value),
-                _ => unreachable!("If you're seeing this, you forgot to add a new command to the match statement. But I still love you XOXO"),
             }
         }
     }
@@ -116,6 +166,10 @@ impl Blackboard {
         };
         self.entries.insert(key.to_string(), entry.clone());
         // godot_print!("Set value: {} = {}. Enum value: {}", key, value, entry);
+    }
+
+    pub fn unset(&mut self, key: &str) {
+        let _ = self.entries.remove(&key.to_string());
     }
 
     pub fn add(&mut self, key: &str, value: &str) {
@@ -187,6 +241,44 @@ impl Blackboard {
         self.entries.insert(key.to_string(), nval);
     }
 
+    pub const EVENT_KEY: &'static str = "__event__";
+    pub const EVENT_ARG_KEY: &'static str = "__event_arg__";
+    fn set_event(&mut self, event_name: &str, arg: Option<&str>) {
+        self.entries.insert(
+            Self::EVENT_KEY.to_string(),
+            Entry::String(event_name.to_string()),
+        );
+        if let Some(arg) = arg {
+            self.entries
+                .insert(Self::EVENT_ARG_KEY.to_string(), Self::get_entry_for(arg));
+        }
+    }
+
+    pub fn jump(&mut self, target: &str) {
+        self.set_event("jump", Some(target));
+    }
+
+    pub fn end(&mut self) {
+        self.set_event("end", None);
+    }
+
+    pub fn get_event(&self) -> Option<(String, Entry)> {
+        if let Some(Entry::String(name)) = self.get(Self::EVENT_KEY) {
+            let arg = self.get(Self::EVENT_ARG_KEY);
+            return Some((name.clone(), arg.unwrap_or_default().clone()));
+        }
+        None
+    }
+
+    pub fn mark_event_handled(&mut self) {
+        if self.entries.contains_key(&Self::EVENT_KEY.to_string()) {
+            self.unset(Self::EVENT_KEY);
+        }
+        if self.entries.contains_key(&Self::EVENT_ARG_KEY.to_string()) {
+            self.unset(Self::EVENT_ARG_KEY);
+        }
+    }
+
     fn get_entry_for(value: &str) -> Entry {
         let var = Json::parse_string(value.to_godot());
         match var.get_type() {
@@ -221,7 +313,7 @@ impl Blackboard {
             }
         };
         match entry {
-            Entry::Number(val) => f32::floor(val * 100f32) as i32, // this does force accuracy to only 0.01, but then again, this system is not designed for
+            Entry::Number(val) => f32::floor(val) as i32, // this does force integer accuracy only, but then again, this system is not designed for complex maths
             Entry::String(val) => {
                 let mut s = DefaultHasher::new();
                 val.hash(&mut s);
@@ -248,6 +340,10 @@ impl Blackboard {
         }
     }
 
+    pub fn get(&self, key: &str) -> Option<Entry> {
+        Some(self.entries.get(key)?.clone())
+    }
+
     pub fn debug_print(&self) {
         let mappings: Vec<String> = self
             .entries
@@ -268,4 +364,12 @@ impl fmt::Debug for Blackboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.entries.iter()).finish()
     }
+}
+type CommandFunction = Rc<dyn Fn(&mut Blackboard, VecDeque<String>)>;
+
+#[derive(Clone)]
+struct Command {
+    name: String,
+    args: usize,
+    callback: CommandFunction,
 }

@@ -225,9 +225,9 @@ pub enum Line {
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct ChoiceOptionEntry {
-    text: String,
-    requires: String,
-    action: String,
+    pub text: String,
+    pub requires: String,
+    pub action: String,
 }
 
 pub enum DialogError {

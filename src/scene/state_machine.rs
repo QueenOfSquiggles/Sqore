@@ -1,8 +1,8 @@
 use godot::prelude::*;
 
-const METHOD_TICK: &'static str = "tick";
-const METHOD_ON_ENTER: &'static str = "on_enter";
-const METHOD_ON_EXIT: &'static str = "on_exit";
+const METHOD_TICK: &str = "tick";
+const METHOD_ON_ENTER: &str = "on_enter";
+const METHOD_ON_EXIT: &str = "on_exit";
 
 #[repr(i32)]
 #[derive(Var, PartialEq, Eq, Debug, Default, Export, Clone)]

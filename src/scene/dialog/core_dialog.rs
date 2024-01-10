@@ -8,7 +8,7 @@ use godot::{
 use crate::util::SquigglesUtil;
 
 use super::{
-    dialog_blackboard::Blackboard,
+    dialog_blackboard::{Blackboard, Entry},
     dialog_events::DialogEvents,
     dialog_gui::{DialogGUI, DialogSettings},
     dialog_track::{DialogError, DialogTrack, Line},
@@ -19,12 +19,10 @@ use super::{
 pub struct CoreDialog {
     current_track: Option<DialogTrack>,
     #[var]
-    current_line_index: i32,
-    #[var]
     override_settings: Option<Gd<DialogSettings>>,
     #[var]
-    event_bus: Option<Gd<DialogEvents>>,
-    gui: Option<Gd<DialogGUI>>,
+    pub event_bus: Option<Gd<DialogEvents>>,
+    pub gui: Option<Gd<DialogGUI>>,
     pub blackboard: Blackboard,
     #[base]
     base: Base<Object>,
@@ -87,12 +85,20 @@ impl CoreDialog {
         // create and add GUI
         let mut gui = DialogGUI::new_alloc();
 
-        gui.bind_mut().track = Some(VecDeque::from_iter(track.lines.clone().into_iter()));
+        gui.bind_mut().track = Some(VecDeque::from_iter(track.lines.clone()));
         SquigglesUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
+        self.gui = Some(gui);
     }
 
     fn handle_dialog_error(err: DialogError) {
         godot_error!("DialogError: {:#?}", err);
+    }
+    #[func]
+    pub fn make_choice_selection(&mut self, selection: i32) -> bool {
+        let Some(gui) = &mut self.gui else {
+            return false;
+        };
+        gui.bind_mut().make_dialog_choice(selection)
     }
 
     pub fn handle_line_action(&mut self, line: &Line) {
@@ -100,7 +106,9 @@ impl CoreDialog {
             self.init_event_bus();
         }
         match line {
-            Line::Action { action } => self.blackboard.parse_action(action.clone()),
+            Line::Action { action } => {
+                self.blackboard_action(action.to_godot());
+            }
             Line::Signal { name, args } => {
                 let Some(bus) = &mut self.event_bus else {
                     return;
@@ -125,6 +133,35 @@ impl CoreDialog {
     #[func]
     pub fn blackboard_action(&mut self, action: GString) {
         self.blackboard.parse_action(action.to_string());
+        let Some((event_name, event_arg)) = self.blackboard.get_event() else {
+            return;
+        };
+        match event_name.as_str() {
+            // TODO handle events with pub const value
+            "end" => {
+                let Some(gui) = &mut self.gui else {
+                    return;
+                };
+                gui.bind_mut().update_track(VecDeque::new());
+            }
+            "jump" => {
+                let Entry::Number(index) = event_arg else {
+                    return;
+                };
+                let index = index.floor() as usize;
+                let Some(gui) = &mut self.gui else {
+                    return;
+                };
+                let n_track = self.current_track.clone().unwrap();
+                let mut lines = VecDeque::from_iter(n_track.lines.iter().cloned());
+                for _ in 0..index {
+                    let _ = lines.pop_front();
+                }
+                gui.bind_mut().update_track(lines);
+            }
+            _ => godot_error!("Unhandled internal event! event: \"{}\"", event_name),
+        }
+        self.blackboard.mark_event_handled();
     }
 
     #[func]
@@ -136,6 +173,14 @@ impl CoreDialog {
     pub fn blackboard_debug_dump(&self) {
         godot_print!("{:#?}", self.blackboard);
         // self.blackboard.debug_print();
+    }
+
+    pub fn jump(&mut self, index: usize) {
+        godot_print!("Jumping to {}", index);
+    }
+
+    pub fn end(&mut self) {
+        godot_print!("Ending dialog");
     }
 
     pub fn singleton() -> Gd<CoreDialog> {
