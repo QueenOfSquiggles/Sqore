@@ -87,6 +87,9 @@ pub struct DialogSettings {
     #[export]
     pub choice_buttons_align: DialogAlign,
 
+    #[export]
+    pub words_per_minute: f32,
+
     #[base]
     base: Base<Resource>,
 }
@@ -108,6 +111,7 @@ impl IResource for DialogSettings {
             anim_hide_trans: Default::default(),
             auto_focus_choice_buttons: true,
             choice_buttons_align: DialogAlign::Center,
+            words_per_minute: 150f32,
         }
     }
 }

@@ -287,17 +287,29 @@ impl DialogGUI {
                 godot_warn!("DialogGUI does not handle Line of type: {:#?}", track);
             }
         }
+        let wpm = self.get_settings().bind().words_per_minute;
         let mut tween = self.get_text_tween(EEaseType::InOut, ETransType::Linear);
         let Some(text) = &mut self.dialog_text else {
             return;
         };
-        // TODO: replace magic numbers
-        text.set_visible_ratio(0f32);
+
+        const ZERO_TEXT: f32 = 0f32;
+        const FULL_TEXT: f32 = 1f32;
+        const MINUTES_TO_SECONDS: f32 = 60.0;
+
+        let words = text
+            .get_text()
+            .clone()
+            .to_string()
+            .split_whitespace()
+            .count();
+        let duration_seconds = (words as f32) * wpm.powi(-1) * MINUTES_TO_SECONDS;
+        text.set_visible_ratio(ZERO_TEXT);
         tween.tween_property(
             text.clone().upcast(),
             NodePath::from("visible_ratio"),
-            1f32.to_variant(),
-            1f64,
+            FULL_TEXT.to_variant(),
+            duration_seconds as f64,
         );
     }
 
@@ -307,7 +319,6 @@ impl DialogGUI {
         };
         #[allow(unused_variables)]
         while let Some(line) = track.pop_front() {
-            godot_print!("DialogGUI processing line {:#?}", line);
             let result: Option<Line> = match line.clone() {
                 Line::Text {
                     text,
@@ -351,7 +362,6 @@ impl DialogGUI {
 
     fn get_text_tween(&mut self, ease: EEaseType, trans: ETransType) -> Gd<Tween> {
         if let Some(tw) = &mut self.tween {
-            godot_print!("Killing current tween!");
             tw.kill();
         }
         if let Some(tween) = &mut SquigglesUtil::create_tween(
