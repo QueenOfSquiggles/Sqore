@@ -241,6 +241,7 @@ pub struct ChoiceOptionEntry {
     pub action: String,
 }
 
+#[derive(Clone)]
 pub enum DialogError {
     CannotOpenFile {
         file: String,

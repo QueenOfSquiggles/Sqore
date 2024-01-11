@@ -58,33 +58,33 @@ impl CoreDialog {
     #[func]
     pub fn load_track_file(&mut self, file_path: GString) {
         let result = DialogTrack::load_from_json(file_path.clone());
-        if result.is_ok() {
+        if let Err(err) = result.clone() {
+            Self::handle_dialog_error(err);
+        } else {
             self.current_track = Some(result.unwrap());
             self.load_track();
-        } else {
-            Self::handle_dialog_error(result.unwrap_err());
         }
     }
 
     #[func]
     pub fn load_track_text(&mut self, track_text: GString) {
         let result = DialogTrack::load_from_text(track_text, "<internal text>".to_godot());
-        if result.is_ok() {
+        if let Err(err) = result.clone() {
+            Self::handle_dialog_error(err);
+        } else {
             self.current_track = Some(result.unwrap());
             self.load_track();
-        } else {
-            Self::handle_dialog_error(result.unwrap_err());
         }
     }
 
     #[func]
     pub fn load_track_dict(&mut self, track_dict: Dictionary) {
         let result = DialogTrack::load_from_dict(track_dict, "<internal dict>".to_godot());
-        if result.is_ok() {
+        if let Err(err) = result.clone() {
+            Self::handle_dialog_error(err);
+        } else {
             self.current_track = Some(result.unwrap());
             self.load_track();
-        } else {
-            Self::handle_dialog_error(result.unwrap_err());
         }
     }
 
@@ -108,11 +108,13 @@ impl CoreDialog {
         };
 
         // kill old GUI
-        self.gui.as_mut().map(|g| {
+        if let Some(g) = self.gui.as_mut() {
             if g.is_instance_valid() {
                 g.queue_free()
             }
-        });
+        }
+        // self.gui.as_mut().map(|g| {
+        // });
 
         // Creates Really Bad Panic
         // if let Some(gui) = &mut self.gui.clone() {
@@ -144,21 +146,18 @@ impl CoreDialog {
         if self.event_bus.is_none() {
             self.init_event_bus();
         }
-        match line {
-            Line::Signal { name, args } => {
-                let Some(bus) = &mut self.event_bus else {
-                    return;
-                };
-                bus.emit_signal(
-                    StringName::from(DialogEvents::SIGNAL_TRACK_SIGNAL),
-                    &[
-                        name.to_variant(),
-                        Array::from_iter(args.iter().map(|s| Json::parse_string(s.to_godot())))
-                            .to_variant(),
-                    ],
-                );
-            }
-            _ => (),
+        if let Line::Signal { name, args } = line {
+            let Some(bus) = &mut self.event_bus else {
+                return;
+            };
+            bus.emit_signal(
+                StringName::from(DialogEvents::SIGNAL_TRACK_SIGNAL),
+                &[
+                    name.to_variant(),
+                    Array::from_iter(args.iter().map(|s| Json::parse_string(s.to_godot())))
+                        .to_variant(),
+                ],
+            );
         }
     }
 
