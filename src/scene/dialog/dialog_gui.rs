@@ -5,9 +5,10 @@ use godot::{
         control::{LayoutPreset, SizeFlags},
         object::ConnectFlags,
         tween::{EaseType, TransitionType},
-        Button, CanvasLayer, Control, HSeparator, ICanvasLayer, InputEvent, Label, LabelSettings,
-        MarginContainer, PanelContainer, RichTextLabel, Tween, VBoxContainer,
+        Button, CanvasLayer, Control, HSeparator, ICanvasLayer, InputEvent, Label, MarginContainer,
+        PanelContainer, RichTextLabel, Tween, VBoxContainer,
     },
+    obj::EngineEnum,
     prelude::*,
 };
 
@@ -16,6 +17,7 @@ use crate::{scene::game_globals::CoreGlobals, util::SquigglesUtil};
 use super::{
     core_dialog::CoreDialog,
     dialog_events::DialogEvents,
+    dialog_settings::{DialogAlign, DialogSettings, EEaseType, ETransType},
     dialog_track::{ChoiceOptionEntry, Line},
 };
 
@@ -195,7 +197,7 @@ impl DialogGUI {
         let mut root = VBoxContainer::new_alloc();
         self.to_gd().add_child(root.clone().upcast());
         self.options_root = Some(root.clone().upcast());
-
+        let mut is_first = self.get_settings().bind().auto_focus_choice_buttons;
         for (index, option) in choices.iter().enumerate() {
             if !option.requires.is_empty()
                 && !CoreDialog::singleton()
@@ -207,7 +209,7 @@ impl DialogGUI {
             }
             let mut button = Button::new_alloc();
             root.add_child(button.clone().upcast());
-            button.set_text(option.text.clone().into());
+            button.set_text(self.parse_text(&option.text).into());
             let action = option.action.clone();
             button
                 .connect_ex(
@@ -233,18 +235,37 @@ impl DialogGUI {
                 )
                 .flags(ConnectFlags::CONNECT_DEFERRED.ord() as u32)
                 .done();
+            if is_first {
+                button.grab_focus();
+                is_first = false;
+            }
         }
-        root.set_anchors_and_offsets_preset(LayoutPreset::PRESET_CENTER);
+        let align = self.get_settings().bind().choice_buttons_align.clone();
+        root.set_anchors_and_offsets_preset(match align {
+            DialogAlign::Left => LayoutPreset::PRESET_CENTER_LEFT,
+            DialogAlign::Right => LayoutPreset::PRESET_CENTER_RIGHT,
+            DialogAlign::Center => LayoutPreset::PRESET_CENTER,
+            DialogAlign::FullWide => LayoutPreset::PRESET_VCENTER_WIDE,
+        });
     }
 
     pub fn load_line(&mut self, track: &Line) {
         match track {
-            Line::Text { text, character } => {
-                if let Some(dialog_text) = &mut self.dialog_text {
-                    dialog_text.set_text(text.to_godot());
+            #[allow(unused_variables)]
+            Line::Text {
+                text,
+                character,
+                requires,
+            } => {
+                let parsed_text = self.parse_text(text);
+                let parsed_char = self.parse_text(character);
+
+                if let Some(dialog_text) = self.dialog_text.as_mut() {
+                    dialog_text.set_text(parsed_text.to_godot());
                 }
+
                 if let Some(character_label) = &mut self.character_label {
-                    character_label.set_text(character.to_godot());
+                    character_label.set_text(parsed_char.to_godot());
                 }
             }
             Line::Choice {
@@ -252,12 +273,13 @@ impl DialogGUI {
                 character,
                 options,
             } => {
-                let _ = options;
+                let parsed_prompt = self.parse_text(prompt);
+                let parsed_char = self.parse_text(character);
                 if let Some(dialog_text) = &mut self.dialog_text {
-                    dialog_text.set_text(prompt.to_godot());
+                    dialog_text.set_text(parsed_prompt.to_godot());
                 }
                 if let Some(character_label) = &mut self.character_label {
-                    character_label.set_text(character.to_godot());
+                    character_label.set_text(parsed_char.to_godot());
                 }
                 self.create_options(options);
             }
@@ -287,18 +309,35 @@ impl DialogGUI {
         while let Some(line) = track.pop_front() {
             godot_print!("DialogGUI processing line {:#?}", line);
             let result: Option<Line> = match line.clone() {
-                Line::Text { text, character } => Some(line),
+                Line::Text {
+                    text,
+                    character,
+                    requires,
+                } => {
+                    if requires.is_empty()
+                        || CoreDialog::singleton()
+                            .bind_mut()
+                            .blackboard_query(requires.to_godot())
+                    {
+                        Some(line)
+                    } else {
+                        None
+                    }
+                }
                 Line::Choice {
                     prompt,
                     character,
                     options,
                 } => Some(line),
                 Line::Action { action } => {
-                    CoreDialog::singleton().bind_mut().handle_line_action(&line);
+                    CoreDialog::singleton()
+                        .call_deferred("blackboard_action".into(), &[action.to_variant()]);
                     continue;
                 }
                 Line::Signal { name, args } => {
-                    CoreDialog::singleton().bind_mut().handle_line_action(&line);
+                    CoreDialog::singleton()
+                        .bind_mut()
+                        .handle_dialog_signal(&line);
                     continue;
                 }
                 Line::None => continue,
@@ -394,99 +433,9 @@ impl DialogGUI {
             tween.tween_callback(Callable::from_object_method(&self.to_gd(), "queue_free"));
         }
     }
-}
 
-#[repr(u32)]
-#[derive(Var, Default, Export)]
-enum DialogAlign {
-    Left = 0,
-    Right = 1,
-    #[default]
-    Center = 2,
-    FullWide = 3,
-}
-
-impl DialogAlign {
-    fn get_margins(&self) -> (i32, i32) {
-        match self {
-            DialogAlign::Left => (32, 256),
-            DialogAlign::Right => (256, 32),
-            DialogAlign::Center => (256, 256),
-            DialogAlign::FullWide => (32, 32),
-        }
-    }
-}
-
-#[repr(i32)]
-#[derive(Var, Default, Export, Clone)]
-enum EEaseType {
-    #[default]
-    In = 0,
-    Out = 1,
-    InOut = 2,
-    OutIn = 3,
-}
-
-#[repr(i32)]
-#[derive(Var, Default, Export, Clone)]
-enum ETransType {
-    #[default]
-    Linear = 0,
-    Sine = 1,
-    Quint = 2,
-    Quart = 3,
-    Quad = 4,
-    Expo = 5,
-    Elastic = 6,
-    Cubic = 7,
-    Circ = 8,
-    Bounce = 9,
-    Back = 10,
-    Spring = 11,
-}
-#[derive(GodotClass)]
-#[class(base=Resource)]
-pub struct DialogSettings {
-    #[export]
-    character_name_label_style: Option<Gd<LabelSettings>>,
-    #[export]
-    dialog_font_size: u32,
-    #[export]
-    dialog_align: DialogAlign,
-    #[export]
-    interact_action: GString,
-    #[export]
-    anim_appear_ease: EEaseType,
-    #[export]
-    anim_appear_trans: ETransType,
-    #[export]
-    anim_appear_duration: f32,
-    #[export]
-    anim_hide_ease: EEaseType,
-    #[export]
-    anim_hide_trans: ETransType,
-    #[export]
-    anim_hide_duration: f32,
-
-    #[base]
-    base: Base<Resource>,
-}
-
-#[godot_api]
-impl IResource for DialogSettings {
-    fn init(base: Base<Resource>) -> Self {
-        Self {
-            base,
-            dialog_font_size: 22u32,
-            character_name_label_style: None,
-            dialog_align: DialogAlign::Center,
-            interact_action: "interact".to_godot(),
-            anim_appear_duration: 1f32,
-            anim_hide_duration: 1f32,
-            anim_appear_ease: Default::default(),
-            anim_appear_trans: Default::default(),
-            anim_hide_ease: Default::default(),
-            anim_hide_trans: Default::default(),
-        }
+    fn parse_text(&self, in_text: &String) -> String {
+        let trans = self.base().tr(in_text.into()).into();
+        CoreDialog::singleton().bind().blackboard_parse(trans)
     }
 }

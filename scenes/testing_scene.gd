@@ -1,8 +1,7 @@
 extends Node
 
 func _ready() -> void:
-	CoreDialog.load_track("res://Dialogic/example.json")
-	CoreDialog.blackboard_action("set shotgun true")
+	CoreDialog.load_track_file("res://Dialogic/example.json")
 	CoreDialog.event_bus.track_ended.connect(_on_track_end)
 
 func _on_track_end() -> void:

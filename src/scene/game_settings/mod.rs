@@ -4,7 +4,7 @@ use self::{
     audio::GameAudioSettings, controls::GameControlsSettings, gameplay::GameGameplaySettings,
     graphics::GameGraphicsSettings,
 };
-use crate::scene::dialog::dialog_gui::DialogSettings;
+use super::dialog::dialog_settings::DialogSettings;
 use crate::scene::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
 
 pub mod accessibility;

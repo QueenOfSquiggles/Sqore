@@ -10,7 +10,8 @@ use crate::util::SquigglesUtil;
 use super::{
     dialog_blackboard::{Blackboard, Entry},
     dialog_events::DialogEvents,
-    dialog_gui::{DialogGUI, DialogSettings},
+    dialog_gui::DialogGUI,
+    dialog_settings::DialogSettings,
     dialog_track::{DialogError, DialogTrack, Line},
 };
 
@@ -18,6 +19,7 @@ use super::{
 #[class(init, base=Object)]
 pub struct CoreDialog {
     current_track: Option<DialogTrack>,
+
     #[var]
     override_settings: Option<Gd<DialogSettings>>,
     #[var]
@@ -54,7 +56,39 @@ impl CoreDialog {
     }
 
     #[func]
-    pub fn load_track(&mut self, file_path: GString) {
+    pub fn load_track_file(&mut self, file_path: GString) {
+        let result = DialogTrack::load_from_json(file_path.clone());
+        if result.is_ok() {
+            self.current_track = Some(result.unwrap());
+            self.load_track();
+        } else {
+            Self::handle_dialog_error(result.unwrap_err());
+        }
+    }
+
+    #[func]
+    pub fn load_track_text(&mut self, track_text: GString) {
+        let result = DialogTrack::load_from_text(track_text, "<internal text>".to_godot());
+        if result.is_ok() {
+            self.current_track = Some(result.unwrap());
+            self.load_track();
+        } else {
+            Self::handle_dialog_error(result.unwrap_err());
+        }
+    }
+
+    #[func]
+    pub fn load_track_dict(&mut self, track_dict: Dictionary) {
+        let result = DialogTrack::load_from_dict(track_dict, "<internal dict>".to_godot());
+        if result.is_ok() {
+            self.current_track = Some(result.unwrap());
+            self.load_track();
+        } else {
+            Self::handle_dialog_error(result.unwrap_err());
+        }
+    }
+
+    pub fn load_track(&mut self) {
         if self.event_bus.is_none() {
             self.init_event_bus();
         }
@@ -68,25 +102,30 @@ impl CoreDialog {
         };
 
         // load track data
-        match DialogTrack::load_from_json(file_path.clone()) {
-            Err(error) => Self::handle_dialog_error(error),
-            Ok(track) => self.current_track = Some(track),
-        }
         let Some(track) = &self.current_track else {
-            godot_warn!("Failed to load a dialog track from {}", file_path);
+            godot_warn!("Failed to load a dialog track");
             return;
         };
 
         // kill old GUI
-        if let Some(gui) = self.gui.as_mut() {
-            gui.queue_free();
-        }
+        self.gui.as_mut().map(|g| {
+            if g.is_instance_valid() {
+                g.queue_free()
+            }
+        });
+
+        // Creates Really Bad Panic
+        // if let Some(gui) = &mut self.gui.clone() {
+        //     if gui.is_instance_valid() {
+        //         gui.queue_free();
+        //     }
+        // }
 
         // create and add GUI
         let mut gui = DialogGUI::new_alloc();
 
-        gui.bind_mut().track = Some(VecDeque::from_iter(track.lines.clone()));
         SquigglesUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
+        gui.bind_mut().track = Some(VecDeque::from_iter(track.lines.clone()));
         self.gui = Some(gui);
     }
 
@@ -101,14 +140,11 @@ impl CoreDialog {
         gui.bind_mut().make_dialog_choice(selection)
     }
 
-    pub fn handle_line_action(&mut self, line: &Line) {
+    pub fn handle_dialog_signal(&mut self, line: &Line) {
         if self.event_bus.is_none() {
             self.init_event_bus();
         }
         match line {
-            Line::Action { action } => {
-                self.blackboard_action(action.to_godot());
-            }
             Line::Signal { name, args } => {
                 let Some(bus) = &mut self.event_bus else {
                     return;
@@ -148,7 +184,7 @@ impl CoreDialog {
                 let Entry::Number(index) = event_arg else {
                     return;
                 };
-                let index = index.floor() as usize;
+                let index = (index.floor() - 1f32) as usize;
                 let Some(gui) = &mut self.gui else {
                     return;
                 };
@@ -175,12 +211,8 @@ impl CoreDialog {
         // self.blackboard.debug_print();
     }
 
-    pub fn jump(&mut self, index: usize) {
-        godot_print!("Jumping to {}", index);
-    }
-
-    pub fn end(&mut self) {
-        godot_print!("Ending dialog");
+    pub fn blackboard_parse(&self, text: String) -> String {
+        self.blackboard.format_text(text)
     }
 
     pub fn singleton() -> Gd<CoreDialog> {

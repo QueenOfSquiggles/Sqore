@@ -6,7 +6,10 @@ use std::{
     rc::Rc,
 };
 
-use godot::{engine::Json, prelude::*};
+use godot::{
+    engine::{global::Error, Json},
+    prelude::*,
+};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Entry {
@@ -303,13 +306,20 @@ impl Blackboard {
             self.entries.get(&key.to_string()).unwrap().clone() // we should be safe to unwrap here???
         } else {
             // from constant
-            let var = Json::parse_string(key.to_godot());
-            match var.get_type() {
-                VariantType::Float => Entry::Number(f32::from_variant(&var)),
-                VariantType::Int => Entry::Number(i32::from_variant(&var) as f32),
-                VariantType::Bool => Entry::Bool(bool::from_variant(&var)),
-                VariantType::String => Entry::String(String::from_variant(&var)),
-                _ => Entry::None,
+            let mut json = Json::new_gd();
+            let err = json.parse(key.to_godot());
+            if err != Error::OK {
+                // for whatever reason we failed, return a none value
+                Entry::None
+            } else {
+                let var = json.get_data();
+                match var.get_type() {
+                    VariantType::Float => Entry::Number(f32::from_variant(&var)),
+                    VariantType::Int => Entry::Number(i32::from_variant(&var) as f32),
+                    VariantType::Bool => Entry::Bool(bool::from_variant(&var)),
+                    VariantType::String => Entry::String(String::from_variant(&var)),
+                    _ => Entry::None,
+                }
             }
         };
         match entry {
@@ -325,6 +335,39 @@ impl Blackboard {
             },
             Entry::None => i32::MIN,
         }
+    }
+
+    pub fn format_text(&self, text: String) -> String {
+        let mut buffer = String::with_capacity(text.len());
+        let mut remaining = text.as_str();
+        const LOOP_LIMITER: u32 = 9999;
+        const DELIM_OPEN: &str = "{{";
+        const DELIM_CLOS: &str = "}}";
+        for _ in 0..LOOP_LIMITER {
+            if remaining.is_empty() {
+                break;
+            }
+            let next = remaining.split_once(DELIM_OPEN);
+            let Some(next) = next else {
+                buffer += remaining;
+                break;
+            };
+            let (pre, post) = next;
+            buffer += pre;
+            let Some(fin) = post.split_once(DELIM_CLOS) else {
+                buffer += post;
+                break;
+            };
+            let (key, after) = fin;
+            let key = key.trim();
+            let var = self.get_variant_entry(key.trim());
+            if var.is_nil() {
+                godot_warn!("Found null when parsing dialog key: {}", key);
+            }
+            buffer += var.to_string().as_str();
+            remaining = after;
+        }
+        buffer
     }
 
     pub fn get_variant_entry(&self, key: &str) -> Variant {

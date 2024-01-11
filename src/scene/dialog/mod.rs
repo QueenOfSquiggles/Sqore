@@ -3,8 +3,10 @@ use godot::{engine::Engine, prelude::*};
 
 pub mod core_dialog;
 pub mod dialog_blackboard;
+pub mod dialog_builder;
 pub mod dialog_events;
 pub mod dialog_gui;
+pub mod dialog_settings;
 pub mod dialog_track;
 
 pub fn register_singleton() {

@@ -19,7 +19,11 @@ impl DialogTrack {
             });
         };
         let text = file.get_as_text();
+        Self::load_from_text(text, file_path)
+    }
+    //    pub fn load_from_json(file_path: GString) -> Result<Self, DialogError> {
 
+    pub fn load_from_text(text: GString, file_path: GString) -> Result<Self, DialogError> {
         let mut json = Json::new_gd();
         json.parse(text.clone());
         let err_msg = json.get_error_message();
@@ -45,7 +49,10 @@ impl DialogTrack {
                 convert_error: format!("{:?}", error),
             });
         }
-        let dict = json_dict.unwrap();
+        Self::load_from_dict(json_dict.unwrap(), file_path)
+    }
+
+    pub fn load_from_dict(dict: Dictionary, file_path: GString) -> Result<Self, DialogError> {
         if !dict.contains_key("nodes") {
             return Err(DialogError::InternalJsonParseError {
                 file: file_path.to_string(),
@@ -118,7 +125,6 @@ impl DialogTrack {
 
         Ok(zelf)
     }
-
     fn parse_text_line(node_data: &Dictionary) -> Line {
         if !node_data.contains_key("content".to_variant()) {
             return Line::None;
@@ -130,6 +136,10 @@ impl DialogTrack {
                 .to_string(),
             character: node_data
                 .get("character")
+                .unwrap_or("".to_variant())
+                .to_string(),
+            requires: node_data
+                .get("requires")
                 .unwrap_or("".to_variant())
                 .to_string(),
         }
@@ -207,6 +217,7 @@ pub enum Line {
     Text {
         text: String,
         character: String,
+        requires: String,
     },
     Choice {
         prompt: String,
