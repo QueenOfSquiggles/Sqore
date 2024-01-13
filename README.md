@@ -1,7 +1,11 @@
 [![Rust Build and Test](https://github.com/QueenOfSquiggles/Squiggles-Core/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/QueenOfSquiggles/Squiggles-Core/actions/workflows/rust.yml)
 
 # Squiggles-Core
-An opinionated utility library for making 3D games in Godot 4 written in rust.
+An opinionated utility library for making 3D games in Godot 4.2 written in rust.
+
+# Mission
+
+This is my tool library that I use for making games. The goal of this library is to make it easier to make the specific kinds of games that I like to make, 3D games with a focus on narrative. As I need/want more tools from this I will add them. It's entirely possible I will forget to add new features to this list
 
 # Main Features
 - Virtual Camera system
@@ -14,10 +18,71 @@ An opinionated utility library for making 3D games in Godot 4 written in rust.
     - Interactble RigidBody3D
     - Interactble StaticBody3D
     - Interactble CharacterBody3D
--
+- Global Game Settings (Accessed as `CoreGlobals.config`)
+    - Graphics
+        - Reasonable defaults for 3D setttings
+        - `WorldEnvironmentSettingsCompliant` custom WorldEnvironment that automatically replicates settings from the graphics settings
+    - Audio: Volume controls for all available audio busses
+    - Controls: Support for controls remapping with any generic inputs
+    - Gameplay: Custom values & types serialized for you
+- Full dialog system
+    - JSON format (easily edit from within Godot)
+    - blackboard with simple scripting and querying
+        - setting variables as well as add/sub on number types
+        - arbitrary queries including all comparative operators
+        - templating using `{{ var_name }}` within Character Names and dialog Text
+        - GDScript access
+            - query values
+            - perform script actions same as within dialog files
+    - signal with specific name and argument array
+    - choices with optional requirements and arbitrary actions upon selection
+    - customize appear and hide tweening
+    - customize words per minute for text appearing (default is 150 WPM, my preference is 500 WPM)
+- staticly typed for easy interfacing with autocomplete in GDScript.
+- `InputAxisAllocator` utility for collecting axis movement
+    - Joystick axis vector
+    - Mouse motion
+    - Independant contribution scaling
+- Fully open source
+
+
+
+# Usage Examples:
+
+Run dialog from file with callback for track ending
+```gdscript
+signal request_player_can_move(can_move: bool)
+
+CoreDialog.load_track_file(file_name)
+CoreDialog.event_bus.track_ended.connect( \
+    Callable(self, "emit_signal") \
+    .bind("request_player_can_move", true), CONNECT_DEFERRED | CONNECT_ONE_SHOT)
+```
+
+Force reload of Core graphics settings. This includes changing the windowing mode and main viewport scaling mode (supports AMD FSR)
+```
+CoreGlobals.config.graphics.mark_dirty()
+```
+
+Minimal FiniteState class
+```gdscript
+extends FiniteState
+
+func on_enter() -> void:
+    pass
+
+func on_exit() -> void:
+	pass
+
+func tick(_delta : float) -> void:
+	pass
+
+```
 
 
 # Platform Support
+
+Squiggles Core supports godot 4.2.X, but I generally test with whatever is the latest stable release of Godot.
 
 ## Batteries Included
 Squiggles Core by default is built to target "the big three" desktop platforms (Windows, Mac, and Linux). The way GDExtensions work is they must be built for a Debug context and for a Release context. The Debug files are used during Debug builds of your game/software as well as in the editor!
