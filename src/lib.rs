@@ -1,6 +1,9 @@
-// crate-wide warnings alterations
 #![allow(dead_code)] // a lot of elements are considered unused because Godot grabs it over FFI.
-
+//! # Squiggles Core
+//! *an opinionated code library for making 3D games with Godot 4*
+//!
+//!	A majority of the resources you will need are in the module [scene]
+//!
 use godot::prelude::*;
 
 // module specifications

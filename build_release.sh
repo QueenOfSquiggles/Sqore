@@ -69,6 +69,16 @@ echo "---"
 ##
 ##
 
+echo "Building documentation"
+cargo doc --no-deps --document-private-items --target-dir . \
+	 > /dev/null
+	 & spinner
+echo "   Done"
+
+##
+##
+##
+
 # make folder
 echo "Making folders"
 mkdir addons
@@ -111,6 +121,7 @@ echo "Copying folders over"
 # static files folders
 cp -r scenes addons/squiggles_core/scenes/
 cp -r assets addons/squiggles_core/assets/
+cp -r target/doc addons/squiggles_core/doc
 
 echo "Creating zip archive"
 zip -r -q squiggles_core_release addons && rm -r addons/

@@ -1,3 +1,4 @@
+//! "Scene" refers to the intitialization step at which these are registered. Everything defined here will be accessible both in debug/editor runtimes as well as in release/standalone builds.
 pub mod camera;
 pub mod dialog;
 pub mod error_handling;

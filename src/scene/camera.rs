@@ -5,6 +5,7 @@ use godot::{
 
 pub const CAMERA_BRAIN_GROUP: &str = "camera_brain";
 
+/// A single `CameraBrain3D` is required for virtual cameras to work
 #[derive(GodotClass)]
 #[class(base=Camera3D)]
 pub struct CameraBrain3D {
@@ -66,6 +67,9 @@ impl CameraBrain3D {
     }
 }
 
+/// Virtual Cameras are fairly simple. The power comes from how they are moved.
+///
+/// For a dolly cam, you could just move the virtual camera along a Path3D based on proximity to the target(s).
 #[derive(GodotClass)]
 #[class(base=Marker3D)]
 pub struct VirtualCamera3D {
@@ -101,6 +105,7 @@ impl IMarker3D for VirtualCamera3D {
 }
 #[godot_api]
 impl VirtualCamera3D {
+    /// Pushes this virtual camera to the active CameraBrain3D's vcam stack
     #[func]
     fn push(&mut self) {
         if let Some(mut tree) = self.base().get_tree() {
@@ -113,6 +118,7 @@ impl VirtualCamera3D {
         }
     }
 
+    // Pops this vcam from the active CameraBrain3D's vcam stack
     #[func]
     fn pop(&mut self) {
         if let Some(mut tree) = self.base().get_tree() {

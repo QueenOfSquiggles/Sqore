@@ -1,4 +1,6 @@
-use godot::engine::{EditorCommandPalette, EditorPlugin, IEditorPlugin, PopupMenu};
+use godot::engine::{
+    EditorCommandPalette, EditorPlugin, IEditorPlugin, Os, PopupMenu, ProjectSettings,
+};
 use godot::prelude::*;
 
 use crate::scene::game_globals::CoreGlobals;
@@ -28,7 +30,7 @@ impl IEditorPlugin for SquigglesCoreEditorUtils {
         self.register_tool_item(
             "force_globals_serialize",
 			"Forces the core globals to serialize their data to the user dir. Clears the missing file warnings.",
-            Callable::from_fn("name", |_args: &[&Variant]| {
+            Callable::from_fn("force_globals_serialize", |_args: &[&Variant]| {
                 CoreGlobals::singleton()
                     .bind()
                     .get_config()
@@ -38,12 +40,26 @@ impl IEditorPlugin for SquigglesCoreEditorUtils {
             }),
             &mut cmd,
         );
+        self.register_tool_item(
+            "open_squiggles_docs",
+            "Opens the documentation for Squiggles Core in your default browser",
+            Callable::from_fn("open_squiggles_docs", |_| {
+                let global_path =
+                    ProjectSettings::singleton().globalize_path(Self::DOC_ENTRY_INDEX.to_godot());
+                Os::singleton().shell_open(global_path);
+                Ok(Variant::nil())
+            }),
+            &mut cmd,
+        )
     }
 
     fn exit_tree(&mut self) {}
 }
 
 impl SquigglesCoreEditorUtils {
+    const DOC_ENTRY_INDEX: &'static str =
+        "res://addons/squiggles_core/doc/squiggles_core/index.html";
+
     /// registers a callable command in both the tools dropdown pane of the editor and the command palette for quick access
     fn register_tool_item(
         &mut self,

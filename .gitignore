@@ -1,7 +1,8 @@
-target
-Cargo.lock
-.vscode
-docs/
-**/*.import
 assets/
+doc/
+debug/
+target/
+Cargo.lock
 squiggles_core_release.zip
+.vscode
+**/*.import
