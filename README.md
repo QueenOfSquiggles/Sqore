@@ -29,7 +29,7 @@ Platforms:
 
 
 ## Build it yourself
-Because Squiggles Core is written in rust and only uses rust-compatible dependencies, you can easily compile alternate versions of this library yourself so long as it is a platform supported by [cross-rs]().
+Because Squiggles Core is written in rust and only uses rust-compatible dependencies, you can easily compile alternate versions of this library yourself so long as it is a platform supported by [cross-rs](https://github.com/cross-rs/cross).
 
 The easist way to compile yourself is to be on a linux platform. Either natively or through Windows Subsystem Linux (WSL). From there you can run the `build_release.sh` script to autmatically compile all supported versions as well as packaging the important files into a single zip archive.
 
@@ -40,4 +40,4 @@ Dependencies:
 
 ### Compiling for unsupported platforms
 If you want to support different platforms such as Mobile you will need to compile "by hand" which uses the same dependencies as `build_release.sh`. Read through cross-rs's documentation for how to compile for your target architecture.
-Then you can add the necessary files into the `target` folder of your install and
+Then you can add the necessary files into the `target` folder of your install and set up the `squiggles_core.gdextension` file to include your library files. Refer to the [godot docs on this](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/gdextension_cpp_example.html#using-the-gdextension-module) for more information on what keys mean what platforms
