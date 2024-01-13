@@ -1,4 +1,5 @@
 #![allow(dead_code)] // a lot of elements are considered unused because Godot grabs it over FFI.
+#![allow(clippy::tabs_in_doc_comments)] // I literally can't be arsed to care about the tabs in my doc comments.
 //! # Squiggles Core
 //! *an opinionated code library for making 3D games with Godot 4*
 //!
