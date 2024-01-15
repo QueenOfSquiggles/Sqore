@@ -94,6 +94,8 @@ cp README.md addons/squiggles_core/README.md
 cp LICENSE addons/squiggles_core/LICENSE
 cp squiggles_core.gdextension addons/squiggles_core/squiggles_core.gdextension
 
+# Stage for zip archive
+
 # Windows libraries
 
 cp target/x86_64-pc-windows-gnu/debug/squiggles_core.dll \
@@ -115,6 +117,31 @@ cp target/x86_64-apple-darwin/debug/libsquiggles_core.dylib \
 
 cp target/x86_64-apple-darwin/release/libsquiggles_core.dylib \
     addons/squiggles_core/target/release/libsquiggles_core.dylib
+
+# Stage for local (using as a git submodule)
+
+# Windows libraries
+
+cp target/x86_64-pc-windows-gnu/debug/squiggles_core.dll \
+    target/debug/squiggles_core.dll
+
+cp target/x86_64-pc-windows-gnu/release/squiggles_core.dll \
+    target/release/squiggles_core.dll
+
+# Linux libraries
+cp target/x86_64-unknown-linux-gnu/debug/libsquiggles_core.so \
+    target/debug/libsquiggles_core.so
+
+cp target/x86_64-unknown-linux-gnu/release/libsquiggles_core.so \
+    target/release/libsquiggles_core.so
+
+# Mac libraries
+cp target/x86_64-apple-darwin/debug/libsquiggles_core.dylib \
+    target/debug/libsquiggles_core.dylib
+
+cp target/x86_64-apple-darwin/release/libsquiggles_core.dylib \
+    target/release/libsquiggles_core.dylib
+
 
 echo "Copying folders over"
 
