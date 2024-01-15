@@ -2,7 +2,7 @@ use godot::prelude::*;
 
 use self::{
     audio::GameAudioSettings, controls::GameControlsSettings, gameplay::GameGameplaySettings,
-    graphics::GameGraphicsSettings,
+    graphics::GameGraphicsSettings, user_mods::UserModifications,
 };
 use super::dialog::dialog_settings::DialogSettings;
 use crate::scene::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
@@ -13,22 +13,25 @@ pub mod controls;
 pub mod effects;
 pub mod gameplay;
 pub mod graphics;
+pub mod user_mods;
 
 #[derive(GodotClass)]
 #[class(tool, init, base=Resource)]
 pub struct SquigglesCoreConfig {
     #[export]
-    graphics: Option<Gd<GameGraphicsSettings>>,
+    pub graphics: Option<Gd<GameGraphicsSettings>>,
     #[export]
-    controls: Option<Gd<GameControlsSettings>>,
+    pub controls: Option<Gd<GameControlsSettings>>,
     #[export]
-    gameplay: Option<Gd<GameGameplaySettings>>,
+    pub gameplay: Option<Gd<GameGameplaySettings>>,
     #[export]
-    audio: Option<Gd<GameAudioSettings>>,
+    pub audio: Option<Gd<GameAudioSettings>>,
     #[export]
-    vfx_stack: Option<Gd<VFXStack>>,
+    pub vfx_stack: Option<Gd<VFXStack>>,
     #[export]
-    dialog: Option<Gd<DialogSettings>>,
+    pub dialog: Option<Gd<DialogSettings>>,
+    #[export]
+    pub user_mods: Option<Gd<UserModifications>>,
 
     //
     #[base]

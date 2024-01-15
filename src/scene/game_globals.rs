@@ -31,6 +31,7 @@ fn get_setting_name(name: &str) -> GString {
     (String::from(PROJECT_SETTINGS_NAMESPACE) + name).to_godot()
 }
 
+/// CoreGlobals is the main access to globals in SquigglesCore. Refer to [SquigglesCoreConfig] for details
 #[derive(GodotClass)]
 #[class(tool, base=Object)]
 // Hey, before you try to make this a Node, engine singletons are separate from the scene tree
@@ -78,7 +79,9 @@ impl IObject for CoreGlobals {
             godot_print!("CoreGlobals: loading data from disk");
             zelf.reload_globals();
         }
-
+        if let Some(user_mod) = zelf.config.bind().user_mods.clone() {
+            user_mod.bind().handle_startup();
+        }
         zelf
     }
 }
@@ -87,15 +90,19 @@ impl IObject for CoreGlobals {
 impl CoreGlobals {
     pub const SIGNAL_VFX_STACK_CHANGED: &'static str = "vfx_stack_changed";
 
+    /// A signal that can be listened to or emitted for requesting serialization
     #[signal]
     fn global_serialize() {}
 
+    /// A signal that can be listened to or emitted for requesting deserialization
     #[signal]
     fn global_deserialize() {}
 
+    /// A signal that can be listened to or emitted for when the VFX stack is changed (still in-dev)
     #[signal]
     fn vfx_stack_changed() {}
 
+    /// finds a SquigglesCore ProjectSettings setting using just the name and initializing if not present
     #[func]
     fn get_setting(&self, name: String, default_value: Variant) -> Variant {
         let result = Self::get_or_init_default(name.as_str(), default_value);
@@ -113,6 +120,7 @@ impl CoreGlobals {
     fn reload_globals(&mut self) {
         self.deserialize();
     }
+    /// Finds the first [CameraBrain3D] in the tree, if one exists
     #[func]
     fn get_camera_brain(&mut self, tree: Option<Gd<SceneTree>>) -> Option<Gd<CameraBrain3D>> {
         let Some(mut tree) = tree else {
