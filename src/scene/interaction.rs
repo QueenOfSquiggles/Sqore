@@ -106,8 +106,10 @@ impl InteractRaycast3D {
 
     #[func]
     fn do_interact(&mut self) {
-        if let Some(mut target) = self.target.clone() {
-            target.call_deferred(StringName::from(METHOD_INTERACT), &[]);
+        if let Some(target) = self.target.as_mut() {
+            if target.is_instance_valid() {
+                target.call_deferred(StringName::from(METHOD_INTERACT), &[]);
+            }
         }
     }
 }

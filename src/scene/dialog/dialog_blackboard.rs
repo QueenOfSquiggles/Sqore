@@ -77,9 +77,10 @@ impl Default for Blackboard {
 impl Blackboard {
     /// Parses the action string
     pub fn parse_action(&mut self, code: String) {
-        // godot_print!("Running action(s): {}", code);
+        if code.is_empty() {
+            return;
+        }
         for action in code.split(';') {
-            // godot_print!("Running sub-action: {}", action);
             let mut parts = VecDeque::from_iter(action.trim().split(' ').map(|dirty| dirty.trim()));
             let command = parts.pop_front().unwrap_or("");
             let mut callback: Option<_> = None;
@@ -114,12 +115,9 @@ impl Blackboard {
     }
 
     pub fn parse_query(&mut self, code: String) -> bool {
-        // godot_print!("Running quer(y/ies): {}", code);
         for query in code.split("and") {
             let mut chunk_val = false;
             for options in query.split("or") {
-                // godot_print!("Running sub-query: {}", options);
-
                 let parts = Vec::from_iter(options.split_whitespace());
                 if parts.len() != 3 {
                     if query.contains('\"') {
@@ -141,7 +139,6 @@ impl Blackboard {
     fn parse_query_value(&mut self, query: (&str, &str, &str)) -> bool {
         let arg1 = self.get_numeric_value(query.0);
         let arg2 = self.get_numeric_value(query.2);
-        // godot_print!("Running internal comparison: {} {} {}", arg1, query.1, arg2);
         match query.1 {
             "==" => arg1 == arg2,
             "!=" => arg1 != arg2,
@@ -168,7 +165,6 @@ impl Blackboard {
             return;
         };
         self.entries.insert(key.to_string(), entry.clone());
-        // godot_print!("Set value: {} = {}. Enum value: {}", key, value, entry);
     }
 
     pub fn unset(&mut self, key: &str) {
@@ -387,6 +383,14 @@ impl Blackboard {
         Some(self.entries.get(key)?.clone())
     }
 
+    pub fn has_entry(&self, key: &str) -> bool {
+        self.entries.contains_key(key)
+    }
+
+    pub fn has_event(&self) -> bool {
+        self.has_entry(Self::EVENT_KEY)
+    }
+
     pub fn debug_print(&self) {
         let mappings: Vec<String> = self
             .entries
@@ -399,7 +403,6 @@ impl Blackboard {
             buffer += "\n";
         }
         buffer += " }";
-        // godot_print!("{}", buffer);
     }
 }
 

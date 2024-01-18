@@ -21,6 +21,16 @@ use super::{
     dialog_track::{ChoiceOptionEntry, Line},
 };
 
+/// The current state of the Dialog GUI,
+#[derive(Debug, Default, PartialEq)]
+enum DialogState {
+    /// Active meaning we are actively processing nodes and pushing data to be visible
+    #[default]
+    Active,
+    /// Pending meaning we are currently waiting on an external process and don't want to create a degenerate reference to CoreDialog by forcing a push
+    Pending,
+}
+
 #[derive(GodotClass)]
 #[class(init, base=CanvasLayer)]
 pub struct DialogGUI {
@@ -30,6 +40,7 @@ pub struct DialogGUI {
     dialog_text: Option<Gd<RichTextLabel>>,
     options_root: Option<Gd<Control>>,
     current_index: usize,
+    state: DialogState,
     #[base]
     base: Base<CanvasLayer>,
 }
@@ -44,7 +55,7 @@ impl ICanvasLayer for DialogGUI {
         self.create_structure();
         if let Some(line) = self.get_next_text_line() {
             self.load_line(&line);
-        } else {
+        } else if self.state != DialogState::Pending {
             godot_warn!(
                 "No text nodes found in dialog track on load. Something must have gone wrong?"
             );
@@ -72,6 +83,13 @@ impl ICanvasLayer for DialogGUI {
         if progress_next_node_flag {
             self.load_next_line();
         }
+    }
+    fn process(&mut self, _delta: f64) {
+        if self.state != DialogState::Pending {
+            return;
+        }
+        // downtime should only be for 2-3 frames MAX! so this aaggresive polling ***shouldn't*** have a big effect on the performance??
+        self.load_next_line();
     }
 
     fn exit_tree(&mut self) {
@@ -211,17 +229,18 @@ impl DialogGUI {
             root.add_child(button.clone().upcast());
             button.set_text(self.parse_text(&option.text).into());
             let action = option.action.clone();
+            if !action.is_empty() {
+                self.state = DialogState::Pending;
+            }
             button
                 .connect_ex(
                     "pressed".into(),
                     Callable::from_fn(
                         format!("choice_button_{} ({})", index, option.text),
                         move |_| {
-                            if !action.is_empty() {
-                                CoreDialog::singleton()
-                                    .bind_mut()
-                                    .blackboard_action(action.clone().into());
-                            }
+                            CoreDialog::singleton()
+                                .bind_mut()
+                                .blackboard_action(action.clone().into());
                             let Some(gui) = &mut CoreDialog::singleton().bind().gui.clone() else {
                                 godot_error!(
                                     "Failed to find instance of the CoreDialog's DialogGUI"
@@ -341,9 +360,11 @@ impl DialogGUI {
                     options,
                 } => Some(line),
                 Line::Action { action } => {
+                    self.state = DialogState::Pending;
+                    godot_print!("Pending processing for action {}", action);
                     CoreDialog::singleton()
                         .call_deferred("blackboard_action".into(), &[action.to_variant()]);
-                    continue;
+                    return None; // force break to allow processing events
                 }
                 Line::Signal { name, args } => {
                     CoreDialog::singleton()
@@ -417,12 +438,15 @@ impl DialogGUI {
     }
 
     fn load_next_line(&mut self) {
+        if self.state == DialogState::Pending {
+            return;
+        }
+
         let Some(margin) = self.base().get_child(0) else {
             godot_error!("Failed to access child of DialogGUI!");
             return;
         };
         let margin = margin.cast::<Control>();
-
         if let Some(line) = self.get_next_text_line() {
             self.load_line(&line);
         } else {
@@ -442,6 +466,11 @@ impl DialogGUI {
             );
             tween.tween_callback(Callable::from_object_method(&self.to_gd(), "queue_free"));
         }
+    }
+
+    pub fn mark_event_handled(&mut self) {
+        godot_print!("Action marked as handled");
+        self.state = DialogState::Active;
     }
 
     fn parse_text(&self, in_text: &String) -> String {

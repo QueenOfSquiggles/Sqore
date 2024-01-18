@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use godot::{
-    engine::{Engine, Json},
+    engine::{self, Engine, Json},
     prelude::*,
 };
 
@@ -154,8 +154,15 @@ impl CoreDialog {
                 StringName::from(DialogEvents::SIGNAL_TRACK_SIGNAL),
                 &[
                     name.to_variant(),
-                    Array::from_iter(args.iter().map(|s| Json::parse_string(s.to_godot())))
-                        .to_variant(),
+                    Array::from_iter(args.iter().map(|s| {
+                        let mut json = Json::new_gd();
+                        if json.parse(s.to_godot()) != engine::global::Error::OK {
+                            // handle invalid types as a simple string value
+                            return s.to_variant();
+                        }
+                        json.get_data()
+                    }))
+                    .to_variant(),
                 ],
             );
         }
@@ -169,8 +176,12 @@ impl CoreDialog {
     pub fn blackboard_action(&mut self, action: GString) {
         self.blackboard.parse_action(action.to_string());
         let Some((event_name, event_arg)) = self.blackboard.get_event() else {
+            if let Some(gui) = &mut self.gui {
+                gui.bind_mut().mark_event_handled();
+            }
             return;
         };
+        godot_print!("Processing event: {}({:#?})", event_name, event_arg);
         match event_name.as_str() {
             // TODO handle events with pub const value
             "end" => {
@@ -183,7 +194,7 @@ impl CoreDialog {
                 let Entry::Number(index) = event_arg else {
                     return;
                 };
-                let index = (index.floor() - 1f32) as usize;
+                let index = (index.floor()) as usize;
                 let Some(gui) = &mut self.gui else {
                     return;
                 };
@@ -197,6 +208,9 @@ impl CoreDialog {
             _ => godot_error!("Unhandled internal event! event: \"{}\"", event_name),
         }
         self.blackboard.mark_event_handled();
+        if let Some(gui) = &mut self.gui {
+            gui.bind_mut().mark_event_handled();
+        }
     }
 
     #[func]
