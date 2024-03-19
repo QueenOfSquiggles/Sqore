@@ -52,20 +52,18 @@ pub enum ETransType {
     Spring = 11,
 }
 #[derive(GodotClass)]
-#[class(init, base=Resource)]
+#[class(base=Resource)]
 pub struct DialogSettings {
     #[export]
     pub character_name_label_style: Option<Gd<LabelSettings>>,
 
     #[export]
-    #[init(default = 22u32)]
     pub dialog_font_size: u32,
 
     #[export]
     pub dialog_align: DialogAlign,
 
     #[export]
-    #[init(default = "interact".to_godot())]
     pub interact_action: GString,
 
     #[export]
@@ -75,7 +73,6 @@ pub struct DialogSettings {
     pub anim_appear_trans: ETransType,
 
     #[export]
-    #[init(default = 1f32)]
     pub anim_appear_duration: f32,
 
     #[export]
@@ -85,19 +82,38 @@ pub struct DialogSettings {
     pub anim_hide_trans: ETransType,
 
     #[export]
-    #[init(default = 1f32)]
     pub anim_hide_duration: f32,
 
     #[export]
-    #[init(default = true)]
     pub auto_focus_choice_buttons: bool,
 
     #[export]
     pub choice_buttons_align: DialogAlign,
 
     #[export]
-    #[init(default = 150f32)]
     pub words_per_minute: f32,
 
     base: Base<Resource>,
+}
+
+#[godot_api]
+impl IResource for DialogSettings {
+    fn init(base: Base<Resource>) -> Self {
+        Self {
+            base,
+            dialog_font_size: 22u32,
+            character_name_label_style: None,
+            dialog_align: DialogAlign::Center,
+            interact_action: "interact".to_godot(),
+            anim_appear_duration: 1f32,
+            anim_hide_duration: 1f32,
+            anim_appear_ease: Default::default(),
+            anim_appear_trans: Default::default(),
+            anim_hide_ease: Default::default(),
+            anim_hide_trans: Default::default(),
+            auto_focus_choice_buttons: true,
+            choice_buttons_align: DialogAlign::Center,
+            words_per_minute: 150f32,
+        }
+    }
 }
