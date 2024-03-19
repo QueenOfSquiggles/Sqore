@@ -145,7 +145,7 @@ impl GameControlsSettings {
 
     fn bind_generic(&mut self, data_dict: Dictionary, action_name: GString) {
         godot_print!("Trying to load generic event for action\"{}\"", action_name);
-        // TODO: this is where I would usually use some kind of reflection? Not sure how I could manage that?
+        // this is where I would usually use some kind of reflection? Not sure how I could manage that?
         let res_str_data = GString::try_from_variant(&data_dict.get_or_nil("json_data"));
         let Ok(str_data) = res_str_data else {
             return;
@@ -168,7 +168,7 @@ impl GameControlsSettings {
         if classes.class_exists(sname.clone()) && classes.can_instantiate(sname.clone()) {
             #[allow(unused)] // just to clear this pesky warning
             let instance = classes.instantiate(sname);
-            // TODO: how to we cast this variant to an object type? (Which would allow us to try to downcast)
+            // how to we cast this variant to an object type? (Which would allow us to try to downcast)
         }
     }
 

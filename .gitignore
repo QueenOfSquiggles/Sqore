@@ -3,6 +3,8 @@ doc/
 debug/
 target/
 Cargo.lock
-squiggles_core_release.zip
 .vscode
 **/*.import
+sqore_release.zip
+.rustc_info.json
+.rustdoc_fingerprint.json

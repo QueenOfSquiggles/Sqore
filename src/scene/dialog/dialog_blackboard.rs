@@ -121,7 +121,7 @@ impl Blackboard {
                 let parts = Vec::from_iter(options.split_whitespace());
                 if parts.len() != 3 {
                     if query.contains('\"') {
-                        // TODO if someone want's to make this support space strings, go right ahead, I'll accept the PR. But I'm not writing it myself lol
+                        // if someone want's to make this support space strings, go right ahead, I'll accept the PR. But I'm not writing it myself lol
                         godot_error!("Strings with spaces are not supported for queries! Only used for storage!")
                     }
                     godot_warn!("Malformed query {}, in code {}", options, code);
