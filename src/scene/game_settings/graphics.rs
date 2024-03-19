@@ -3,7 +3,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
+use crate::scene::serialization::{SaveDataBuilder, SqoreSerialized};
 
 #[derive(GodotClass)]
 #[class(tool, base=Resource)]
@@ -88,7 +88,7 @@ impl GameGraphicsSettings {
 
 const GRAPHICS_SAVE_PATH: &str = "user://core/graphics.json";
 
-impl SquigglesSerialized for GameGraphicsSettings {
+impl SqoreSerialized for GameGraphicsSettings {
     fn serialize(&mut self) {
         let mut save = SaveDataBuilder::new_alloc();
         let mut bind = save.bind_mut();

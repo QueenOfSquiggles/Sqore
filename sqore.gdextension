@@ -1,0 +1,44 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.3
+reloadable = true
+
+
+[libraries]
+;; Debug Binaries
+linux.debug.x86_64 =     "res://addons/sqore/target/debug/libsqore.so"
+windows.debug.x86_64 =   "res://addons/sqore/target/debug/sqore.dll"
+macos.debug =            "res://addons/sqore/target/debug/libsqore.dylib"
+macos.debug.arm64 =      "res://addons/sqore/target/debug/libsqore.dylib"
+
+;; Release Binaries
+linux.release.x86_64 =   "res://addons/sqore/target/release/libsqore.so"
+windows.release.x86_64 = "res://addons/sqore/target/release/sqore.dll"
+macos.release =          "res://addons/sqore/target/release/libsqore.dylib"
+macos.release.arm64 =    "res://addons/sqore/target/release/libsqore.dylib"
+
+
+[icons]
+
+;; camera.rs
+
+CameraBrain3D = "res://addons/sqore/assets/icons/camera_brain.svg"
+VirtualCamera3D = "res://addons/sqore/assets/icons/virtual_camera.svg"
+
+;; interaction.rs
+
+InteractRaycast3D = "res://addons/sqore/assets/icons/interaction_raycast3d.svg"
+InteractArea3D = "res://addons/sqore/assets/icons/interaction_area3d.svg"
+InteractionObjectArea3D = "res://addons/sqore/assets/icons/interact_object_area3d.svg"
+InteractionObjectStaticBody3D = "res://addons/sqore/assets/icons/interact_object_static3d.svg"
+InteractionObjectCharacterBody3D = "res://addons/sqore/assets/icons/interact_object_character3d.svg"
+
+;; state_machine.rs
+
+FiniteStateMachine = "res://addons/sqore/assets/icons/fsm.svg"
+FiniteState = "res://addons/sqore/assets/icons/fsm_state.svg"
+FiniteSubStateMachine = "res://addons/sqore/assets/icons/fsm_sub_state.svg"
+
+;; utility_nodes/gui_interact.rs
+
+GuiInteract = "res://addons/sqore/assets/icons/gui_interact.svg"

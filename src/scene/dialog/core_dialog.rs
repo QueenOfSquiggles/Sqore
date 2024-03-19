@@ -5,7 +5,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::util::SquigglesUtil;
+use crate::util::SqoreUtil;
 
 use super::{
     dialog_blackboard::{Blackboard, Entry},
@@ -35,7 +35,7 @@ impl IObject for CoreDialog {}
 
 #[godot_api]
 impl CoreDialog {
-    pub const SINGLETON_NAME: &'static str = "CoreDialog";
+    pub const SINGLETON_NAME: &'static str = "SqoreDialog";
 
     #[func]
     pub fn init_event_bus(&mut self) {
@@ -43,7 +43,7 @@ impl CoreDialog {
             godot_warn!("No need to call init_event_bus! Already initialized!");
             return;
         }
-        let Some(tree) = SquigglesUtil::get_scene_tree_global() else {
+        let Some(tree) = SqoreUtil::get_scene_tree_global() else {
             godot_warn!("Failed to find SceneTree when initializing event bus");
             return;
         };
@@ -93,7 +93,7 @@ impl CoreDialog {
             self.init_event_bus();
         }
         // ensure is in tree
-        let Some(tree) = SquigglesUtil::get_scene_tree_global() else {
+        let Some(tree) = SqoreUtil::get_scene_tree_global() else {
             godot_warn!("failed to load godot scene tree for CoreDialog");
             return;
         };
@@ -126,7 +126,7 @@ impl CoreDialog {
         // create and add GUI
         let mut gui = DialogGUI::new_alloc();
 
-        SquigglesUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
+        SqoreUtil::add_child_deferred(&mut root.upcast(), &gui.clone().upcast());
         gui.bind_mut().track = Some(VecDeque::from_iter(track.lines.clone()));
         self.gui = Some(gui);
     }

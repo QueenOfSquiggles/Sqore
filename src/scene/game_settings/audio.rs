@@ -1,4 +1,4 @@
-use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
+use crate::scene::serialization::{SaveDataBuilder, SqoreSerialized};
 use godot::prelude::*;
 
 #[derive(GodotClass)]
@@ -27,7 +27,7 @@ impl IResource for GameAudioSettings {
 impl GameAudioSettings {}
 
 const AUDIO_SETTINGS_PATH: &str = "user://core/audio.json";
-impl SquigglesSerialized for GameAudioSettings {
+impl SqoreSerialized for GameAudioSettings {
     fn serialize(&mut self) {
         let mut sb = SaveDataBuilder::new_alloc();
         let mut sbind = sb.bind_mut();

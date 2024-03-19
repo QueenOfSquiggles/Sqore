@@ -1,6 +1,6 @@
 #! /usr/bin/bash
 
-echo "Building artifacts for Squiggles Core"
+echo "Building artifacts for Sqore"
 
 spinner()
 {
@@ -82,78 +82,78 @@ echo "   Done"
 # make folder
 echo "Making folders"
 mkdir addons
-mkdir addons/squiggles_core
-mkdir addons/squiggles_core/target
-mkdir addons/squiggles_core/target/debug
-mkdir addons/squiggles_core/target/release
+mkdir addons/sqore
+mkdir addons/sqore/target
+mkdir addons/sqore/target/debug
+mkdir addons/sqore/target/release
 
 echo "Copying files over"
 
 # metadata
-cp README.md addons/squiggles_core/README.md
-cp LICENSE addons/squiggles_core/LICENSE
-cp squiggles_core.gdextension addons/squiggles_core/squiggles_core.gdextension
+cp README.md addons/sqore/README.md
+cp LICENSE addons/sqore/LICENSE
+cp sqore.gdextension addons/sqore/sqore.gdextension
 
 # Stage for zip archive
 
 # Windows libraries
 
-cp target/x86_64-pc-windows-gnu/debug/squiggles_core.dll \
-    addons/squiggles_core/target/debug/squiggles_core.dll
+cp target/x86_64-pc-windows-gnu/debug/sqore.dll \
+    addons/sqore/target/debug/sqore.dll
 
-cp target/x86_64-pc-windows-gnu/release/squiggles_core.dll \
-    addons/squiggles_core/target/release/squiggles_core.dll
+cp target/x86_64-pc-windows-gnu/release/sqore.dll \
+    addons/sqore/target/release/sqore.dll
 
 # Linux libraries
-cp target/x86_64-unknown-linux-gnu/debug/libsquiggles_core.so \
-    addons/squiggles_core/target/debug/libsquiggles_core.so
+cp target/x86_64-unknown-linux-gnu/debug/libsqore.so \
+    addons/sqore/target/debug/libsqore.so
 
-cp target/x86_64-unknown-linux-gnu/release/libsquiggles_core.so \
-    addons/squiggles_core/target/release/libsquiggles_core.so
+cp target/x86_64-unknown-linux-gnu/release/libsqore.so \
+    addons/sqore/target/release/libsqore.so
 
 # Mac libraries
-cp target/x86_64-apple-darwin/debug/libsquiggles_core.dylib \
-    addons/squiggles_core/target/debug/libsquiggles_core.dylib
+cp target/x86_64-apple-darwin/debug/libsqore.dylib \
+    addons/sqore/target/debug/libsqore.dylib
 
-cp target/x86_64-apple-darwin/release/libsquiggles_core.dylib \
-    addons/squiggles_core/target/release/libsquiggles_core.dylib
+cp target/x86_64-apple-darwin/release/libsqore.dylib \
+    addons/sqore/target/release/libsqore.dylib
 
 # Stage for local (using as a git submodule)
 
 # Windows libraries
 
-cp target/x86_64-pc-windows-gnu/debug/squiggles_core.dll \
-    target/debug/squiggles_core.dll
+cp target/x86_64-pc-windows-gnu/debug/sqore.dll \
+    target/debug/sqore.dll
 
-cp target/x86_64-pc-windows-gnu/release/squiggles_core.dll \
-    target/release/squiggles_core.dll
+cp target/x86_64-pc-windows-gnu/release/sqore.dll \
+    target/release/sqore.dll
 
 # Linux libraries
-cp target/x86_64-unknown-linux-gnu/debug/libsquiggles_core.so \
-    target/debug/libsquiggles_core.so
+cp target/x86_64-unknown-linux-gnu/debug/libsqore.so \
+    target/debug/libsqore.so
 
-cp target/x86_64-unknown-linux-gnu/release/libsquiggles_core.so \
-    target/release/libsquiggles_core.so
+cp target/x86_64-unknown-linux-gnu/release/libsqore.so \
+    target/release/libsqore.so
 
 # Mac libraries
-cp target/x86_64-apple-darwin/debug/libsquiggles_core.dylib \
-    target/debug/libsquiggles_core.dylib
+cp target/x86_64-apple-darwin/debug/libsqore.dylib \
+    target/debug/libsqore.dylib
 
-cp target/x86_64-apple-darwin/release/libsquiggles_core.dylib \
-    target/release/libsquiggles_core.dylib
+cp target/x86_64-apple-darwin/release/libsqore.dylib \
+    target/release/libsqore.dylib
 
 
 echo "Copying folders over"
 
 # static files folders
-cp -r scenes addons/squiggles_core/scenes/
-cp -r assets addons/squiggles_core/assets/
-cp -r doc addons/squiggles_core/doc
+cp -r scenes addons/sqore/scenes/
+cp -r assets addons/sqore/assets/
+cp -r doc addons/sqore/doc
 
 echo "Creating zip archive"
-zip -r -q squiggles_core_release addons && rm -r addons/
+zip -r -q sqore_release addons && rm -r addons/
 
-echo "Your archive should be in this directory as 'squiggles_core_release.zip'"
+echo "Your archive should be in this directory as 'sqore_release.zip'"
 
 
 

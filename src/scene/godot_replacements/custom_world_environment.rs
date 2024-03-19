@@ -3,7 +3,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::scene::game_globals::CoreGlobals;
+use crate::scene::game_globals::SqoreGlobals;
 
 #[derive(GodotClass)]
 #[class(init, base=WorldEnvironment)]
@@ -18,7 +18,7 @@ struct WorldEnvironmentSettingsCompliant {
 impl IWorldEnvironment for WorldEnvironmentSettingsCompliant {
     fn ready(&mut self) {
         self.on_graphics_settings_changed();
-        if let Some(mut gfx) = CoreGlobals::singleton()
+        if let Some(mut gfx) = SqoreGlobals::singleton()
             .bind()
             .get_config()
             .bind()
@@ -41,7 +41,7 @@ impl WorldEnvironmentSettingsCompliant {
             env = n_env;
         }
 
-        let Some(gd_gfx) = CoreGlobals::singleton()
+        let Some(gd_gfx) = SqoreGlobals::singleton()
             .bind()
             .get_config()
             .bind()

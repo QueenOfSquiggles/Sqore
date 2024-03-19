@@ -1,11 +1,10 @@
 [package]
-name = "squiggles_core"
-version = "0.1.0"
+name = "sqore"
+version = "0.2.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"] # Compile this crate to a dynamic C library.
+crate-type = ["cdylib"]
 
 [dependencies]
-# godot = { git = "https://github.com/godot-rust/gdext", branch="master" }
 godot = { git = "https://github.com/godot-rust/gdext", rev = "fe5b02b" }

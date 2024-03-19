@@ -169,7 +169,7 @@ pub impl SaveDataBuilder {
 }
 
 /// Unfortunately this only can be used internally, but it grants access to serialization functions for all serializable functions
-pub trait SquigglesSerialized {
+pub trait SqoreSerialized {
     fn serialize(&mut self);
     fn deserialize(&mut self);
 }

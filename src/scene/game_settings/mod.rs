@@ -5,7 +5,7 @@ use self::{
     graphics::GameGraphicsSettings, user_mods::UserModifications,
 };
 use super::dialog::dialog_settings::DialogSettings;
-use crate::scene::{serialization::SquigglesSerialized, vfx_stack::vfx_stack_resource::VFXStack};
+use crate::scene::{serialization::SqoreSerialized, vfx_stack::vfx_stack_resource::VFXStack};
 
 pub mod accessibility;
 pub mod audio;
@@ -17,7 +17,7 @@ pub mod user_mods;
 
 #[derive(GodotClass)]
 #[class(tool, init, base=Resource)]
-pub struct SquigglesCoreConfig {
+pub struct SqoreConfig {
     #[export]
     pub graphics: Option<Gd<GameGraphicsSettings>>,
     #[export]
@@ -37,12 +37,12 @@ pub struct SquigglesCoreConfig {
     base: Base<Resource>,
 }
 #[godot_api]
-impl IResource for SquigglesCoreConfig {}
+impl IResource for SqoreConfig {}
 
 #[godot_api]
-impl SquigglesCoreConfig {}
+impl SqoreConfig {}
 
-impl SquigglesSerialized for SquigglesCoreConfig {
+impl SqoreSerialized for SqoreConfig {
     fn serialize(&mut self) {
         if let Some(mut gfx) = self.graphics.clone() {
             gfx.bind_mut().serialize();

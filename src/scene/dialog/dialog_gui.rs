@@ -12,7 +12,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::{scene::game_globals::CoreGlobals, util::SquigglesUtil};
+use crate::{scene::game_globals::SqoreGlobals, util::SqoreUtil};
 
 use super::{
     core_dialog::CoreDialog,
@@ -385,7 +385,7 @@ impl DialogGUI {
         if let Some(tw) = &mut self.tween {
             tw.kill();
         }
-        if let Some(tween) = &mut SquigglesUtil::create_tween(
+        if let Some(tween) = &mut SqoreUtil::create_tween(
             &mut self.to_gd().upcast(),
             Some(EaseType::from_ord(ease.get_property())),
             Some(TransitionType::from_ord(trans.get_property())),
@@ -404,7 +404,7 @@ impl DialogGUI {
             .bind()
             .get_override_settings()
             .unwrap_or(
-                CoreGlobals::singleton()
+                SqoreGlobals::singleton()
                     .bind()
                     .get_config()
                     .bind()

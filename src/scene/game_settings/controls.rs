@@ -9,7 +9,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
+use crate::scene::serialization::{SaveDataBuilder, SqoreSerialized};
 
 #[derive(Var, PartialEq, PartialOrd, Eq, Ord, GodotConvert)]
 #[godot(via=i32)]
@@ -342,7 +342,7 @@ impl GameControlsSettings {
 }
 
 const CONTROLS_SETTINGS_PATH: &str = "user://core/controls.json";
-impl SquigglesSerialized for GameControlsSettings {
+impl SqoreSerialized for GameControlsSettings {
     fn serialize(&mut self) {
         let mut sb = SaveDataBuilder::new_alloc();
         let mut sbind = sb.bind_mut();

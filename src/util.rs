@@ -2,9 +2,9 @@ use godot::engine::tween::{EaseType, TransitionType};
 use godot::engine::{Engine, SceneTree, Tween};
 use godot::prelude::*;
 
-pub struct SquigglesUtil;
+pub struct SqoreUtil;
 
-impl SquigglesUtil {
+impl SqoreUtil {
     pub fn get_scene_tree_global() -> Option<Gd<SceneTree>> {
         let Some(main_loop) = Engine::singleton().get_main_loop() else {
             return None;
