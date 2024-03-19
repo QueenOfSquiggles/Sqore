@@ -1,4 +1,4 @@
-use self::core_dialog::CoreDialog;
+use self::core_dialog::SqoreDialog;
 use godot::{engine::Engine, prelude::*};
 
 pub mod core_dialog;
@@ -11,11 +11,11 @@ pub mod dialog_track;
 
 pub fn register_singleton() {
     Engine::singleton().register_singleton(
-        StringName::from(CoreDialog::SINGLETON_NAME),
-        CoreDialog::new_alloc().upcast(),
+        StringName::from(SqoreDialog::SINGLETON_NAME),
+        SqoreDialog::new_alloc().upcast(),
     );
 }
 
 pub fn unregister_singleton() {
-    Engine::singleton().unregister_singleton(StringName::from(CoreDialog::SINGLETON_NAME));
+    Engine::singleton().unregister_singleton(StringName::from(SqoreDialog::SINGLETON_NAME));
 }

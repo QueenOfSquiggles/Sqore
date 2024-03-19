@@ -1,6 +1,6 @@
 use godot::{engine::ShaderMaterial, prelude::*};
 
-use crate::scene::game_globals::SqoreGlobals;
+use crate::scene::game_globals::Sqore;
 
 #[derive(GodotClass)]
 #[class(init, base=Resource)]
@@ -18,20 +18,14 @@ impl VFXStack {
         if let Some(mut layer) = self.layers.iter_shared().find(|p| p.bind().label == label) {
             layer.bind_mut().enabled = is_enabled;
         }
-        SqoreGlobals::singleton().emit_signal(
-            StringName::from(SqoreGlobals::SIGNAL_VFX_STACK_CHANGED),
-            &[],
-        );
+        Sqore::singleton().emit_signal(StringName::from(Sqore::SIGNAL_VFX_STACK_CHANGED), &[]);
     }
     #[func]
     fn set_layer_enabled(&mut self, index: i32, is_enabled: bool) {
         if let Some(mut layer) = self.layers.try_get(usize::try_from(index).unwrap_or(0)) {
             layer.bind_mut().enabled = is_enabled;
         }
-        SqoreGlobals::singleton().emit_signal(
-            StringName::from(SqoreGlobals::SIGNAL_VFX_STACK_CHANGED),
-            &[],
-        );
+        Sqore::singleton().emit_signal(StringName::from(Sqore::SIGNAL_VFX_STACK_CHANGED), &[]);
     }
 
     #[func]
@@ -56,10 +50,7 @@ impl VFXStack {
         for mut entry in self.layers.iter_shared() {
             entry.bind_mut().enabled = is_enabled;
         }
-        SqoreGlobals::singleton().emit_signal(
-            StringName::from(SqoreGlobals::SIGNAL_VFX_STACK_CHANGED),
-            &[],
-        );
+        Sqore::singleton().emit_signal(StringName::from(Sqore::SIGNAL_VFX_STACK_CHANGED), &[]);
     }
 }
 

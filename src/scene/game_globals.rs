@@ -19,7 +19,7 @@ pub const SINGLETON_CORE_GLOBALS: &str = "Sqore";
 pub fn register_singleton() {
     Engine::singleton().register_singleton(
         StringName::from(SINGLETON_CORE_GLOBALS),
-        SqoreGlobals::new_alloc().upcast(),
+        Sqore::new_alloc().upcast(),
     );
 }
 
@@ -35,7 +35,7 @@ fn get_setting_name(name: &str) -> GString {
 #[derive(GodotClass)]
 #[class(tool, base=Object)]
 // Hey, before you try to make this a Node, engine singletons are separate from the scene tree
-pub struct SqoreGlobals {
+pub struct Sqore {
     #[var]
     config: Gd<SqoreConfig>,
 
@@ -43,7 +43,7 @@ pub struct SqoreGlobals {
 }
 
 #[godot_api]
-impl IObject for SqoreGlobals {
+impl IObject for Sqore {
     fn init(base: Base<Self::Base>) -> Self {
         // let mut zelf = Self { config: None, base };
         let mut possible_config: Option<Gd<SqoreConfig>> = None;
@@ -86,7 +86,7 @@ impl IObject for SqoreGlobals {
 }
 
 #[godot_api]
-impl SqoreGlobals {
+impl Sqore {
     pub const SIGNAL_VFX_STACK_CHANGED: &'static str = "vfx_stack_changed";
 
     /// A signal that can be listened to or emitted for requesting serialization
@@ -156,11 +156,11 @@ impl SqoreGlobals {
         }
     }
 
-    pub fn singleton() -> Gd<SqoreGlobals> {
+    pub fn singleton() -> Gd<Sqore> {
         let Some(vol) = Engine::singleton().get_singleton(SINGLETON_CORE_GLOBALS.into()) else {
             panic!("Failed to find engine singleton for CoreGlobals. You must access this after it is registered!");
         };
-        let res_core: Result<Gd<SqoreGlobals>, Gd<_>> = vol.try_cast();
+        let res_core: Result<Gd<Sqore>, Gd<_>> = vol.try_cast();
         let Ok(core) = res_core else {
             panic!("Failed to cast engine singleton for CoreGlobals. This should never happen!");
         };
@@ -168,7 +168,7 @@ impl SqoreGlobals {
     }
 }
 
-impl SqoreSerialized for SqoreGlobals {
+impl SqoreSerialized for Sqore {
     fn serialize(&mut self) {
         // I'm comfy using unwrap because this struct should never be constructed outside of the init function, which assigns the
         self.config.bind_mut().serialize();

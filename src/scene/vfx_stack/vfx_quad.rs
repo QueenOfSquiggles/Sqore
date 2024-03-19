@@ -3,7 +3,7 @@ use godot::{
     prelude::*,
 };
 
-use crate::scene::game_globals::SqoreGlobals;
+use crate::scene::game_globals::Sqore;
 
 #[derive(GodotClass)]
 #[class(base=MeshInstance3D)]
@@ -17,7 +17,7 @@ impl VFXQuad {
     pub const CALLABLE_REFRESH_VFX_STACK: &'static str = "refresh_vfx_stack";
     #[func]
     fn refresh_vfx_stack(&mut self) {
-        let Some(binding) = SqoreGlobals::singleton()
+        let Some(binding) = Sqore::singleton()
             .bind()
             .get_config()
             .bind()
@@ -50,8 +50,8 @@ impl IMeshInstance3D for VFXQuad {
 
     fn ready(&mut self) {
         self.base_mut().set_mesh(QuadMesh::new_gd().upcast());
-        SqoreGlobals::singleton().connect(
-            StringName::from(SqoreGlobals::SIGNAL_VFX_STACK_CHANGED),
+        Sqore::singleton().connect(
+            StringName::from(Sqore::SIGNAL_VFX_STACK_CHANGED),
             Callable::from_object_method(&self.base(), Self::CALLABLE_REFRESH_VFX_STACK),
         );
         let vfx = self.vfx.clone().upcast();

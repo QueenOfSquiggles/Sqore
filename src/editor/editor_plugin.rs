@@ -3,7 +3,7 @@ use godot::engine::{
 };
 use godot::prelude::*;
 
-use crate::scene::game_globals::SqoreGlobals;
+use crate::scene::game_globals::Sqore;
 use crate::scene::serialization::SqoreSerialized;
 
 #[derive(GodotClass)]
@@ -30,7 +30,7 @@ impl IEditorPlugin for SqoreEditorUtils {
             "force_globals_serialize",
 			"Forces the core globals to serialize their data to the user dir. Clears the missing file warnings.",
             Callable::from_fn("force_globals_serialize", |_args: &[&Variant]| {
-                SqoreGlobals::singleton()
+                Sqore::singleton()
                     .bind()
                     .get_config()
                     .bind_mut()

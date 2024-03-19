@@ -17,7 +17,7 @@ use super::{
 
 #[derive(GodotClass)]
 #[class(init, base=Object)]
-pub struct CoreDialog {
+pub struct SqoreDialog {
     current_track: Option<DialogTrack>,
 
     #[var]
@@ -31,10 +31,10 @@ pub struct CoreDialog {
 }
 
 #[godot_api]
-impl IObject for CoreDialog {}
+impl IObject for SqoreDialog {}
 
 #[godot_api]
-impl CoreDialog {
+impl SqoreDialog {
     pub const SINGLETON_NAME: &'static str = "SqoreDialog";
 
     #[func]
@@ -228,12 +228,12 @@ impl CoreDialog {
         self.blackboard.format_text(text)
     }
 
-    pub fn singleton() -> Gd<CoreDialog> {
+    pub fn singleton() -> Gd<SqoreDialog> {
         let Some(vol) = Engine::singleton().get_singleton(StringName::from(Self::SINGLETON_NAME))
         else {
             panic!("Failed to find engine singleton for CoreGlobals. You must access this after it is registered!");
         };
-        let res_core: Result<Gd<CoreDialog>, Gd<_>> = vol.try_cast();
+        let res_core: Result<Gd<SqoreDialog>, Gd<_>> = vol.try_cast();
         let Ok(core) = res_core else {
             panic!("Failed to cast engine singleton for CoreGlobals. This should never happen!");
         };

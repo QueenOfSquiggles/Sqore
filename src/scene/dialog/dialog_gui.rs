@@ -12,10 +12,10 @@ use godot::{
     prelude::*,
 };
 
-use crate::{scene::game_globals::SqoreGlobals, util::SqoreUtil};
+use crate::{scene::game_globals::Sqore, util::SqoreUtil};
 
 use super::{
-    core_dialog::CoreDialog,
+    core_dialog::SqoreDialog,
     dialog_events::DialogEvents,
     dialog_settings::{DialogAlign, DialogSettings, EEaseType, ETransType},
     dialog_track::{ChoiceOptionEntry, Line},
@@ -94,7 +94,7 @@ impl ICanvasLayer for DialogGUI {
 
     fn exit_tree(&mut self) {
         //pass
-        if let Some(event_bus) = &mut CoreDialog::singleton().bind().get_event_bus() {
+        if let Some(event_bus) = &mut SqoreDialog::singleton().bind().get_event_bus() {
             event_bus.emit_signal(StringName::from(DialogEvents::SIGNAL_TRACK_ENDED), &[]);
         }
     }
@@ -189,12 +189,22 @@ impl DialogGUI {
 
         let mut tween = tween
             .set_trans(TransitionType::from_ord(
-                settings.bind().anim_appear_ease.get_property(),
+                settings
+                    .bind()
+                    .anim_appear_ease
+                    .get_property()
+                    .try_into()
+                    .unwrap(),
             ))
             .unwrap();
         let mut tween = tween
             .set_ease(EaseType::from_ord(
-                settings.bind().anim_appear_ease.get_property(),
+                settings
+                    .bind()
+                    .anim_appear_ease
+                    .get_property()
+                    .try_into()
+                    .unwrap(),
             ))
             .unwrap();
         tween.tween_property(
@@ -218,7 +228,7 @@ impl DialogGUI {
         let mut is_first = self.get_settings().bind().auto_focus_choice_buttons;
         for (index, option) in choices.iter().enumerate() {
             if !option.requires.is_empty()
-                && !CoreDialog::singleton()
+                && !SqoreDialog::singleton()
                     .bind_mut()
                     .blackboard_query(option.requires.clone().into())
             {
@@ -238,10 +248,10 @@ impl DialogGUI {
                     Callable::from_fn(
                         format!("choice_button_{} ({})", index, option.text),
                         move |_| {
-                            CoreDialog::singleton()
+                            SqoreDialog::singleton()
                                 .bind_mut()
                                 .blackboard_action(action.clone().into());
-                            let Some(gui) = &mut CoreDialog::singleton().bind().gui.clone() else {
+                            let Some(gui) = &mut SqoreDialog::singleton().bind().gui.clone() else {
                                 godot_error!(
                                     "Failed to find instance of the CoreDialog's DialogGUI"
                                 );
@@ -345,7 +355,7 @@ impl DialogGUI {
                     requires,
                 } => {
                     if requires.is_empty()
-                        || CoreDialog::singleton()
+                        || SqoreDialog::singleton()
                             .bind_mut()
                             .blackboard_query(requires.to_godot())
                     {
@@ -362,12 +372,12 @@ impl DialogGUI {
                 Line::Action { action } => {
                     self.state = DialogState::Pending;
                     godot_print!("Pending processing for action {}", action);
-                    CoreDialog::singleton()
+                    SqoreDialog::singleton()
                         .call_deferred("blackboard_action".into(), &[action.to_variant()]);
                     return None; // force break to allow processing events
                 }
                 Line::Signal { name, args } => {
-                    CoreDialog::singleton()
+                    SqoreDialog::singleton()
                         .bind_mut()
                         .handle_dialog_signal(&line);
                     continue;
@@ -387,8 +397,8 @@ impl DialogGUI {
         }
         if let Some(tween) = &mut SqoreUtil::create_tween(
             &mut self.to_gd().upcast(),
-            Some(EaseType::from_ord(ease.get_property())),
-            Some(TransitionType::from_ord(trans.get_property())),
+            Some(EaseType::from_ord(ease.get_property() as i32)),
+            Some(TransitionType::from_ord(trans.get_property() as i32)),
         ) {
             self.tween = Some(tween.clone());
             return tween.clone();
@@ -400,11 +410,11 @@ impl DialogGUI {
     }
 
     fn get_settings(&self) -> Gd<DialogSettings> {
-        CoreDialog::singleton()
+        SqoreDialog::singleton()
             .bind()
             .get_override_settings()
             .unwrap_or(
-                SqoreGlobals::singleton()
+                Sqore::singleton()
                     .bind()
                     .get_config()
                     .bind()
@@ -475,6 +485,6 @@ impl DialogGUI {
 
     fn parse_text(&self, in_text: &String) -> String {
         let trans = self.base().tr(in_text.into()).into();
-        CoreDialog::singleton().bind().blackboard_parse(trans)
+        SqoreDialog::singleton().bind().blackboard_parse(trans)
     }
 }
