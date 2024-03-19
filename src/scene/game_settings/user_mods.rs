@@ -4,8 +4,8 @@ use godot::{
     engine::{DirAccess, Engine, ProjectSettings},
     prelude::*,
 };
-#[repr(i32)]
-#[derive(Debug, Var, Export, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Var, Export, Default, PartialEq, Eq, PartialOrd, Ord, GodotConvert)]
+#[godot(via=i32)]
 pub enum ModLoadingType {
     #[default]
     Disabled = 0,
@@ -22,8 +22,6 @@ pub struct UserModifications {
     allow_mods_override_files: bool,
     #[export]
     loading_type: ModLoadingType,
-
-    #[base]
     base: Base<Resource>,
 }
 

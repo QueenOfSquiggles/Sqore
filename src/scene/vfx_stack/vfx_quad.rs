@@ -9,7 +9,7 @@ use crate::scene::game_globals::CoreGlobals;
 #[class(base=MeshInstance3D)]
 pub struct VFXQuad {
     vfx: Gd<ShaderMaterial>,
-    #[base]
+
     base: Base<MeshInstance3D>,
 }
 #[godot_api]

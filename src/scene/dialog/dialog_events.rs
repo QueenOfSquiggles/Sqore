@@ -3,7 +3,6 @@ use godot::prelude::*;
 #[derive(GodotClass)]
 #[class(init, base=Node)]
 pub struct DialogEvents {
-    #[base]
     node: Base<Node>,
 }
 

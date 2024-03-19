@@ -76,7 +76,7 @@ pub struct InputAxisAllocatorResource {
     event_up: StringName,
     #[export]
     event_down: StringName,
-    #[base]
+
     node: Base<Resource>,
 }
 
@@ -94,7 +94,6 @@ pub struct InputAxisAllocator {
 
     value: Vector2,
 
-    #[base]
     node: Base<Node>,
 }
 

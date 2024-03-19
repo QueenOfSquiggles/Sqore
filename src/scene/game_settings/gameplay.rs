@@ -9,7 +9,7 @@ pub struct GameGameplaySettings {
     options_number: Array<Gd<GameplayOptionNumber>>,
     #[export]
     options_string: Array<Gd<GameplayOptionString>>,
-    #[base]
+
     base: Base<Resource>,
 }
 
@@ -82,7 +82,7 @@ pub struct GameplayOptionBool {
     option_key: GString,
     #[export]
     value: bool,
-    #[base]
+
     node: Base<Resource>,
 }
 
@@ -107,7 +107,7 @@ pub struct GameplayOptionNumber {
     allow_greater: bool,
     #[export]
     allow_lesser: bool,
-    #[base]
+
     node: Base<Resource>,
 }
 
@@ -126,7 +126,7 @@ pub struct GameplayOptionString {
     treat_as_enum: bool,
     #[export]
     enum_values: PackedStringArray,
-    #[base]
+
     node: Base<Resource>,
 }
 

@@ -10,7 +10,6 @@ use crate::scene::serialization::SquigglesSerialized;
 #[class(tool, editor_plugin, init, base=EditorPlugin)]
 struct SquigglesCoreEditorUtils {
     tool_items: Option<Gd<PopupMenu>>,
-    #[base]
     base: Base<EditorPlugin>,
 }
 

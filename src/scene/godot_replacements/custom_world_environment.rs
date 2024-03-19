@@ -10,7 +10,7 @@ use crate::scene::game_globals::CoreGlobals;
 struct WorldEnvironmentSettingsCompliant {
     #[export]
     force_override: bool,
-    #[base]
+
     base: Base<WorldEnvironment>,
 }
 
@@ -61,9 +61,9 @@ impl WorldEnvironmentSettingsCompliant {
         env.set_tonemap_exposure(gfx.get_value_exposure());
         if let Some(mut viewport) = self.base().get_viewport() {
             viewport.set_scaling_3d_mode(match gfx.get_scaling_algorithm() {
-                0 => Scaling3DMode::SCALING_3D_MODE_BILINEAR,
-                1 => Scaling3DMode::SCALING_3D_MODE_FSR,
-                2 => Scaling3DMode::SCALING_3D_MODE_FSR2,
+                0 => Scaling3DMode::BILINEAR,
+                1 => Scaling3DMode::FSR,
+                2 => Scaling3DMode::FSR2,
                 _ => unreachable!(),
             })
         }

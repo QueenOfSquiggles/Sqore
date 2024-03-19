@@ -4,7 +4,7 @@ use godot::prelude::*;
 #[class(init, base=Object)]
 pub struct DialogBuilder {
     nodes: Array<Dictionary>,
-    #[base]
+
     node: Base<Object>,
 }
 #[godot_api]

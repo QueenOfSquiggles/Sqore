@@ -11,8 +11,8 @@ use godot::{
 
 use crate::scene::serialization::{SaveDataBuilder, SquigglesSerialized};
 
-#[repr(i32)]
-#[derive(Var, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Var, PartialEq, PartialOrd, Eq, Ord, GodotConvert)]
+#[godot(via=i32)]
 enum MappingsStyle {
     All = 0,
     AllCustom = 1,
@@ -29,8 +29,8 @@ impl MappingsStyle {
     }
 }
 
-#[repr(i32)]
-#[derive(Var, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Var, PartialEq, PartialOrd, Eq, Ord, GodotConvert)]
+#[godot(via = i32)]
 enum HandledInputEvents {
     JoypadButton = 0,
     JoypadMotion = 1,
@@ -82,7 +82,6 @@ pub struct GameControlsSettings {
     // internal
     base_mappings: MappingStorage,
     mapping_overrides: MappingStorage,
-    #[base]
     base: Base<Resource>,
 }
 #[godot_api]

@@ -20,7 +20,7 @@ struct InteractRaycast3D {
     filter_groups: PackedStringArray,
     #[var]
     target: Option<Gd<Node3D>>,
-    #[base]
+
     base: Base<RayCast3D>,
 }
 
@@ -31,7 +31,7 @@ struct InteractArea3D {
     filter_groups: PackedStringArray,
     #[var]
     target: Option<Gd<Node3D>>,
-    #[base]
+
     base: Base<Area3D>,
 }
 
@@ -42,7 +42,7 @@ struct InteractionObjectArea3D {
     is_active: bool,
     #[export]
     active_name: GString,
-    #[base]
+
     base: Base<Area3D>,
 }
 
@@ -53,7 +53,7 @@ struct InteractionObjectStaticBody3D {
     is_active: bool,
     #[export]
     active_name: GString,
-    #[base]
+
     base: Base<StaticBody3D>,
 }
 
@@ -64,7 +64,7 @@ struct InteractionObjectCharacterBody3D {
     is_active: bool,
     #[export]
     active_name: GString,
-    #[base]
+
     base: Base<CharacterBody3D>,
 }
 #[derive(GodotClass)]
@@ -74,7 +74,7 @@ struct InteractionObjectRigidBody3D {
     is_active: bool,
     #[export]
     active_name: GString,
-    #[base]
+
     base: Base<RigidBody3D>,
 }
 

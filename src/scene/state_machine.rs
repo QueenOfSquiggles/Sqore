@@ -4,8 +4,8 @@ const METHOD_TICK: &str = "tick";
 const METHOD_ON_ENTER: &str = "on_enter";
 const METHOD_ON_EXIT: &str = "on_exit";
 
-#[repr(i32)]
-#[derive(Var, PartialEq, Eq, Debug, Default, Export, Clone)]
+#[derive(Var, PartialEq, Eq, Debug, Default, Export, Clone, GodotConvert)]
+#[godot(via = i64)]
 enum TickMode {
     #[default]
     Process = 0,
@@ -19,9 +19,9 @@ struct FiniteStateMachine {
     tick_mode: TickMode,
     #[export]
     current: Option<Gd<Node>>,
-    #[base]
     base: Base<Node>,
 }
+
 #[derive(GodotClass)]
 #[class(init, base=Node)]
 struct FiniteState;

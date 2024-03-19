@@ -26,7 +26,7 @@ pub struct CoreDialog {
     pub event_bus: Option<Gd<DialogEvents>>,
     pub gui: Option<Gd<DialogGUI>>,
     pub blackboard: Blackboard,
-    #[base]
+
     base: Base<Object>,
 }
 

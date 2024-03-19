@@ -19,7 +19,7 @@ struct GuiInteract {
     disappear_sfx: Sfx,
 
     audio_player: Option<Gd<AudioStreamPlayer>>,
-    #[base]
+
     base: Base<Node>,
 }
 

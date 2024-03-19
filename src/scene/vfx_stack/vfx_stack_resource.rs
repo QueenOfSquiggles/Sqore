@@ -8,7 +8,6 @@ pub struct VFXStack {
     #[export]
     layers: Array<Gd<VFXStackLayer>>,
 
-    #[base]
     node: Base<Resource>,
 }
 
@@ -67,7 +66,7 @@ pub struct VFXStackLayer {
     label: GString,
     #[export]
     enabled: bool,
-    #[base]
+
     node: Base<Resource>,
 }
 #[godot_api]

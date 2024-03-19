@@ -30,7 +30,7 @@ pub struct GameGraphicsSettings {
     window_fullscreen_mode: i32,
     #[export(enum=(Standard=0, FSR10=1, FSR22=2))]
     scaling_algorithm: i32,
-    #[base]
+
     base: Base<Resource>,
 }
 
@@ -48,8 +48,8 @@ impl IResource for GameGraphicsSettings {
             value_contrast: 1.0,
             value_saturation: 1.0,
             value_exposure: 1.0,
-            scaling_algorithm: Scaling3DMode::SCALING_3D_MODE_BILINEAR.ord(),
-            window_fullscreen_mode: WindowMode::WINDOW_MODE_MAXIMIZED.ord(),
+            scaling_algorithm: Scaling3DMode::BILINEAR.ord(),
+            window_fullscreen_mode: WindowMode::MAXIMIZED.ord(),
         }
     }
 }
@@ -69,14 +69,14 @@ impl GameGraphicsSettings {
 
         // == window mode
         DisplayServer::singleton().window_set_mode(match self.window_fullscreen_mode {
-            0 => WindowMode::WINDOW_MODE_WINDOWED,
-            1 => WindowMode::WINDOW_MODE_MINIMIZED,
-            2 => WindowMode::WINDOW_MODE_MAXIMIZED,
-            3 => WindowMode::WINDOW_MODE_FULLSCREEN,
-            4 => WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
+            0 => WindowMode::WINDOWED,
+            1 => WindowMode::MINIMIZED,
+            2 => WindowMode::MAXIMIZED,
+            3 => WindowMode::FULLSCREEN,
+            4 => WindowMode::EXCLUSIVE_FULLSCREEN,
             _ => {
 				godot_warn!("CoreGlobals/config/graphics:window_fullscreen_mode = {}. This is outside of the allowed bounds. Don't frickin do that!?", self.window_fullscreen_mode);
-				WindowMode::WINDOW_MODE_WINDOWED},
+				WindowMode::WINDOWED},
     	    }
 		);
 

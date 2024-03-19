@@ -5,7 +5,6 @@ use godot::engine::{ISubViewportContainer, SubViewportContainer};
 #[derive(GodotClass)]
 #[class(base=SubViewportContainer)]
 pub struct PostProcessingContainer {
-    #[base]
     base: Base<SubViewportContainer>,
 }
 

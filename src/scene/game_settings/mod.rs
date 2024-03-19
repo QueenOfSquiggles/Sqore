@@ -34,7 +34,6 @@ pub struct SquigglesCoreConfig {
     pub user_mods: Option<Gd<UserModifications>>,
 
     //
-    #[base]
     base: Base<Resource>,
 }
 #[godot_api]

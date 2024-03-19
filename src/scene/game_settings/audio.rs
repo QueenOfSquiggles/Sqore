@@ -8,7 +8,7 @@ pub struct GameAudioSettings {
     audio_db_limit: f32,
     #[export]
     audio_bus_volumes: PackedFloat32Array,
-    #[base]
+
     base: Base<Resource>,
 }
 

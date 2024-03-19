@@ -41,7 +41,7 @@ pub struct DialogGUI {
     options_root: Option<Gd<Control>>,
     current_index: usize,
     state: DialogState,
-    #[base]
+
     base: Base<CanvasLayer>,
 }
 
@@ -143,7 +143,7 @@ impl DialogGUI {
         }
         rich_text.set_use_bbcode(true);
         rich_text.set_text("[wave] Hello World! [/wave]".to_godot());
-        rich_text.set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+        rich_text.set_v_size_flags(SizeFlags::EXPAND_FILL);
 
         let font_size = settings.bind().dialog_font_size as i32;
         rich_text.add_theme_font_size_override(StringName::from("normal_font_size"), font_size);
@@ -169,7 +169,7 @@ impl DialogGUI {
         margin.add_theme_constant_override(StringName::from("margin_left"), margin_lr.0);
         margin.add_theme_constant_override(StringName::from("margin_right"), margin_lr.1);
         margin.add_theme_constant_override(StringName::from("margin_bottom"), BOTTOM_MARGIN);
-        margin.set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_WIDE);
+        margin.set_anchors_and_offsets_preset(LayoutPreset::BOTTOM_WIDE);
         margin.force_update_transform();
         /*
         	*/
@@ -252,7 +252,7 @@ impl DialogGUI {
                         },
                     ),
                 )
-                .flags(ConnectFlags::CONNECT_DEFERRED.ord() as u32)
+                .flags(ConnectFlags::DEFERRED.ord() as u32)
                 .done();
             if is_first {
                 button.grab_focus();
@@ -261,10 +261,10 @@ impl DialogGUI {
         }
         let align = self.get_settings().bind().choice_buttons_align.clone();
         root.set_anchors_and_offsets_preset(match align {
-            DialogAlign::Left => LayoutPreset::PRESET_CENTER_LEFT,
-            DialogAlign::Right => LayoutPreset::PRESET_CENTER_RIGHT,
-            DialogAlign::Center => LayoutPreset::PRESET_CENTER,
-            DialogAlign::FullWide => LayoutPreset::PRESET_VCENTER_WIDE,
+            DialogAlign::Left => LayoutPreset::CENTER_LEFT,
+            DialogAlign::Right => LayoutPreset::CENTER_RIGHT,
+            DialogAlign::Center => LayoutPreset::CENTER,
+            DialogAlign::FullWide => LayoutPreset::VCENTER_WIDE,
         });
     }
 

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]  # Compile this crate to a dynamic C library.
+crate-type = ["cdylib"] # Compile this crate to a dynamic C library.
 
 [dependencies]
 # godot = { git = "https://github.com/godot-rust/gdext", branch="master" }
-godot = { git = "https://github.com/godot-rust/gdext", rev="8d93420" }
+godot = { git = "https://github.com/godot-rust/gdext", rev = "fe5b02b" }

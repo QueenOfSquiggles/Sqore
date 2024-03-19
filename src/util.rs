@@ -26,7 +26,7 @@ impl SquigglesUtil {
     ) -> Option<Gd<Tween>> {
         object
             .create_tween()?
-            .set_ease(ease.unwrap_or(EaseType::EASE_IN_OUT))?
-            .set_trans(trans.unwrap_or(TransitionType::TRANS_LINEAR))
+            .set_ease(ease.unwrap_or(EaseType::IN_OUT))?
+            .set_trans(trans.unwrap_or(TransitionType::LINEAR))
     }
 }

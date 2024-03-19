@@ -38,7 +38,7 @@ fn get_setting_name(name: &str) -> GString {
 pub struct CoreGlobals {
     #[var]
     config: Gd<SquigglesCoreConfig>,
-    #[base]
+
     base: Base<Object>,
 }
 

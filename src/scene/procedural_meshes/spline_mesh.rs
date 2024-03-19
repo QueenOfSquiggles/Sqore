@@ -10,7 +10,7 @@
 //     spline: Option<Gd<Path3D>>,
 //     #[export]
 //     target_mesh: Option<Gd<Mesh>>,
-//     #[base]
+//
 //     base: Base<MeshInstance3D>,
 // }
 

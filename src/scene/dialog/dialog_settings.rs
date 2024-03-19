@@ -1,7 +1,7 @@
 use godot::{engine::LabelSettings, prelude::*};
 
-#[repr(u32)]
-#[derive(Var, Default, Export, Clone)]
+#[derive(Var, Default, Export, Clone, GodotConvert)]
+#[godot(via=i64)]
 pub enum DialogAlign {
     Left = 0,
     Right = 1,
@@ -21,8 +21,8 @@ impl DialogAlign {
     }
 }
 
-#[repr(i32)]
-#[derive(Var, Default, Export, Clone)]
+#[derive(Var, Default, Export, Clone, GodotConvert)]
+#[godot(via = i32)]
 pub enum EEaseType {
     #[default]
     In = 0,
@@ -31,8 +31,8 @@ pub enum EEaseType {
     OutIn = 3,
 }
 
-#[repr(i32)]
-#[derive(Var, Default, Export, Clone)]
+#[derive(Var, Default, Export, Clone, GodotConvert)]
+#[godot(via=i32)]
 pub enum ETransType {
     #[default]
     Linear = 0,
@@ -77,20 +77,14 @@ pub struct DialogSettings {
 
     #[export]
     pub anim_hide_trans: ETransType,
-
     #[export]
     pub anim_hide_duration: f32,
-
     #[export]
     pub auto_focus_choice_buttons: bool,
-
     #[export]
     pub choice_buttons_align: DialogAlign,
-
     #[export]
     pub words_per_minute: f32,
-
-    #[base]
     base: Base<Resource>,
 }
 

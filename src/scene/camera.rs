@@ -11,7 +11,6 @@ pub const CAMERA_BRAIN_GROUP: &str = "camera_brain";
 pub struct CameraBrain3D {
     cam_buffer: Vec<Gd<VirtualCamera3D>>,
     last_cam: bool,
-    #[base]
     base: Base<Camera3D>,
 }
 
@@ -82,7 +81,6 @@ pub struct VirtualCamera3D {
     #[export]
     push_on_ready: bool,
 
-    #[base]
     base: Base<Marker3D>,
 }
 
