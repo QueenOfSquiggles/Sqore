@@ -13,6 +13,7 @@ pub mod signals;
 pub mod state_machine;
 pub mod utility_nodes;
 pub mod vfx_stack;
+pub mod gui;
 
 pub fn register_singletons() {
     game_globals::register_singleton();

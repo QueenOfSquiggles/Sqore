@@ -1,0 +1,100 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnbbxlomwl1pr"]
+
+[ext_resource type="Script" path="res://addons/sqore/scenes/prefabs/sqore_options_menu/sqore_options_menu.gd" id="1_6met4"]
+[ext_resource type="Script" path="res://addons/sqore/scenes/prefabs/sqore_options_menu/gameplay.gd" id="2_n73id"]
+
+[node name="SqoreOptionsMenu" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6met4")
+
+[node name="Gameplay" type="CollapsingVBoxContainer" parent="."]
+heading_text = "Gameplay"
+layout_mode = 2
+script = ExtResource("2_n73id")
+
+[node name="HFlowContainer" type="HFlowContainer" parent="Gameplay"]
+visible = false
+layout_mode = 2
+
+[node name="CheckSSAO" type="CheckButton" parent="Gameplay/HFlowContainer"]
+layout_mode = 2
+text = "Use SSAO"
+
+[node name="CheckBloom" type="CheckButton" parent="Gameplay/HFlowContainer"]
+layout_mode = 2
+
+[node name="CheckSDFGI" type="CheckButton" parent="Gameplay/HFlowContainer"]
+layout_mode = 2
+
+[node name="CheckSSIL" type="CheckButton" parent="Gameplay/HFlowContainer"]
+layout_mode = 2
+
+[node name="CheckSSR" type="CheckButton" parent="Gameplay/HFlowContainer"]
+layout_mode = 2
+
+[node name="Graphics" type="CollapsingVBoxContainer" parent="."]
+heading_text = "Graphics"
+layout_mode = 2
+
+[node name="Controls" type="CollapsingVBoxContainer" parent="."]
+heading_text = "Controls"
+layout_mode = 2
+
+[node name="Audio" type="CollapsingVBoxContainer" parent="."]
+heading_text = "Audio"
+layout_mode = 2
+
+[node name="HSlider" type="HSlider" parent="."]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HSlider"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "asdasdasd"
+
+[node name="Min" type="Label" parent="HSlider"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0"
+vertical_alignment = 2
+
+[node name="Max" type="Label" parent="HSlider"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "1"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Current" type="Label" parent="HSlider"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0.55556"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="LabelledHSlider" type="LabelledHSlider" parent="."]
+text = "This is a cool slider"
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+max_value = 89.46

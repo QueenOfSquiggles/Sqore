@@ -1,6 +1,8 @@
 [configuration]
 entry_symbol = "gdext_rust_init"
 compatibility_minimum = 4.2
+
+;; set to false for better performance. Set to true for development
 reloadable = false
 
 
