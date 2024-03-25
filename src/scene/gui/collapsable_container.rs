@@ -1,5 +1,6 @@
 use godot::engine::Button;
 use godot::engine::Control;
+use godot::engine::Engine;
 use godot::engine::IVBoxContainer;
 use godot::engine::VBoxContainer;
 use godot::prelude::*;
@@ -45,6 +46,13 @@ impl IVBoxContainer for CollapsingVBoxContainer {
 impl CollapsingVBoxContainer {
     #[func]
     fn on_heading_toggle(&mut self, is_toggled: bool) {
+        let toggle_value = if Engine::singleton().is_editor_hint() {
+            // in the editor, always show collapseable items
+            true
+        } else {
+            is_toggled
+        };
+
         let mut children: Vec<Gd<Node>> = self.base_mut().get_children().iter_shared().collect();
         if let Some(btn) = &self.heading {
             let btn_base = &btn.clone().upcast::<Node>();
@@ -52,13 +60,13 @@ impl CollapsingVBoxContainer {
         }
         for child in children {
             if let Ok(control) = &mut child.clone().try_cast::<Control>() {
-                control.set_visible(is_toggled);
+                control.set_visible(toggle_value);
             }
             if let Ok(node2d) = &mut child.clone().try_cast::<Node2D>() {
-                node2d.set_visible(is_toggled);
+                node2d.set_visible(toggle_value);
             }
             if let Ok(node3d) = &mut child.clone().try_cast::<Node3D>() {
-                node3d.set_visible(is_toggled);
+                node3d.set_visible(toggle_value);
             }
         }
     }

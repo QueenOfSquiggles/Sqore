@@ -16,29 +16,132 @@ heading_text = "Gameplay"
 layout_mode = 2
 script = ExtResource("2_n73id")
 
-[node name="HFlowContainer" type="HFlowContainer" parent="Gameplay"]
-visible = false
-layout_mode = 2
-
-[node name="CheckSSAO" type="CheckButton" parent="Gameplay/HFlowContainer"]
-layout_mode = 2
-text = "Use SSAO"
-
-[node name="CheckBloom" type="CheckButton" parent="Gameplay/HFlowContainer"]
-layout_mode = 2
-
-[node name="CheckSDFGI" type="CheckButton" parent="Gameplay/HFlowContainer"]
-layout_mode = 2
-
-[node name="CheckSSIL" type="CheckButton" parent="Gameplay/HFlowContainer"]
-layout_mode = 2
-
-[node name="CheckSSR" type="CheckButton" parent="Gameplay/HFlowContainer"]
-layout_mode = 2
-
 [node name="Graphics" type="CollapsingVBoxContainer" parent="."]
 heading_text = "Graphics"
 layout_mode = 2
+
+[node name="Label" type="Label" parent="Graphics"]
+layout_mode = 2
+text = "Graphics Details"
+horizontal_alignment = 1
+
+[node name="HFlowContainer" type="HFlowContainer" parent="Graphics"]
+layout_mode = 2
+alignment = 1
+
+[node name="CheckSSAO" type="CheckButton" parent="Graphics/HFlowContainer"]
+layout_mode = 2
+text = "Use Ambient Occlusion (SSAO)"
+
+[node name="CheckBloom" type="CheckButton" parent="Graphics/HFlowContainer"]
+layout_mode = 2
+text = "Use Bloom"
+
+[node name="CheckSDFGI" type="CheckButton" parent="Graphics/HFlowContainer"]
+layout_mode = 2
+text = "Use Global Illumination (SDFGI)"
+
+[node name="CheckSSIL" type="CheckButton" parent="Graphics/HFlowContainer"]
+layout_mode = 2
+text = "Use Indirect Lighting (SSIL)"
+
+[node name="CheckSSR" type="CheckButton" parent="Graphics/HFlowContainer"]
+layout_mode = 2
+text = "Use Reflections (SSR)"
+
+[node name="Label2" type="Label" parent="Graphics"]
+layout_mode = 2
+text = "Color Balancing"
+horizontal_alignment = 1
+
+[node name="SliderValue" type="LabelledHSlider" parent="Graphics"]
+text = "Value"
+enable_reset = true
+label_decimal_places = 1
+custom_minimum_size = Vector2(32, 64)
+layout_mode = 2
+max_value = 1.0
+step = 0.1
+value = 1.0
+
+[node name="SliderContrast" type="LabelledHSlider" parent="Graphics"]
+text = "Contrast"
+enable_reset = true
+label_decimal_places = 1
+custom_minimum_size = Vector2(32, 64)
+layout_mode = 2
+max_value = 1.0
+step = 0.1
+value = 1.0
+
+[node name="SliderSaturation" type="LabelledHSlider" parent="Graphics"]
+text = "Saturation"
+enable_reset = true
+label_decimal_places = 1
+custom_minimum_size = Vector2(32, 64)
+layout_mode = 2
+max_value = 1.0
+step = 0.1
+value = 1.0
+
+[node name="SliderExposure" type="LabelledHSlider" parent="Graphics"]
+text = "Exposure"
+enable_reset = true
+label_decimal_places = 1
+custom_minimum_size = Vector2(32, 64)
+layout_mode = 2
+max_value = 8.0
+step = 0.1
+value = 1.0
+
+[node name="Label3" type="Label" parent="Graphics"]
+layout_mode = 2
+text = "Window"
+horizontal_alignment = 1
+
+[node name="Windowing" type="HBoxContainer" parent="Graphics"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Graphics/Windowing"]
+layout_mode = 2
+text = "Windowing"
+
+[node name="OptionWindowing" type="OptionButton" parent="Graphics/Windowing"]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 5
+selected = 0
+allow_reselect = true
+popup/item_0/text = "Windowed"
+popup/item_0/id = 0
+popup/item_1/text = "Minimized"
+popup/item_1/id = 1
+popup/item_2/text = "Maximized"
+popup/item_2/id = 2
+popup/item_3/text = "Windowed Fullscreen"
+popup/item_3/id = 3
+popup/item_4/text = "Exclusive Fullscreen"
+popup/item_4/id = 4
+
+[node name="Scaling" type="HBoxContainer" parent="Graphics"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Graphics/Scaling"]
+layout_mode = 2
+text = "Graphics Scaling"
+
+[node name="OptionScaling" type="OptionButton" parent="Graphics/Scaling"]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 3
+selected = 0
+allow_reselect = true
+popup/item_0/text = "Standard"
+popup/item_0/id = 0
+popup/item_1/text = "AMD FSR 1.0"
+popup/item_1/id = 1
+popup/item_2/text = "AMD FSR 2.2"
+popup/item_2/id = 2
 
 [node name="Controls" type="CollapsingVBoxContainer" parent="."]
 heading_text = "Controls"
@@ -47,54 +150,3 @@ layout_mode = 2
 [node name="Audio" type="CollapsingVBoxContainer" parent="."]
 heading_text = "Audio"
 layout_mode = 2
-
-[node name="HSlider" type="HSlider" parent="."]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-
-[node name="Title" type="Label" parent="HSlider"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "asdasdasd"
-
-[node name="Min" type="Label" parent="HSlider"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "0"
-vertical_alignment = 2
-
-[node name="Max" type="Label" parent="HSlider"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "1"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Current" type="Label" parent="HSlider"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "0.55556"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="LabelledHSlider" type="LabelledHSlider" parent="."]
-text = "This is a cool slider"
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-max_value = 89.46
