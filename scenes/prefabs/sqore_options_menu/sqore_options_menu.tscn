@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://dnbbxlomwl1pr"]
 
-[ext_resource type="Script" path="res://addons/sqore/scenes/prefabs/sqore_options_menu/sqore_options_menu.gd" id="1_6met4"]
-[ext_resource type="Script" path="res://addons/sqore/scenes/prefabs/sqore_options_menu/gameplay.gd" id="2_n73id"]
+[ext_resource type="Script" path="res://addons/squiggles-core/scenes/prefabs/sqore_options_menu/sqore_options_menu.gd" id="1_6met4"]
+[ext_resource type="Script" path="res://addons/squiggles-core/scenes/prefabs/sqore_options_menu/gameplay.gd" id="2_n73id"]
 
 [node name="SqoreOptionsMenu" type="VBoxContainer"]
 anchors_preset = 15

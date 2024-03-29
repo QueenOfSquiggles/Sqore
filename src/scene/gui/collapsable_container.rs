@@ -56,7 +56,7 @@ impl CollapsingVBoxContainer {
         let mut children: Vec<Gd<Node>> = self.base_mut().get_children().iter_shared().collect();
         if let Some(btn) = &self.heading {
             let btn_base = &btn.clone().upcast::<Node>();
-            children = children.into_iter().filter(|p| p != btn_base).collect();
+            children.retain(|p| p != btn_base);
         }
         for child in children {
             if let Ok(control) = &mut child.clone().try_cast::<Control>() {

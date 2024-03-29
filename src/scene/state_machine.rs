@@ -1,3 +1,8 @@
+//! # State Machines
+//! For Godot 4.2 earlier, you have to manually remember the functions "tick", "on_enter", and "on_exit" as those are the string name values that are checked for in the states.
+//! > From Godot 4.3+, support for virtual functions will have been reached which will allow a refactor that makes extending the base class functions significantly easier.
+//!
+//! For now just remember to keep your function names in order and everything should be fine
 use godot::prelude::*;
 
 const METHOD_TICK: &str = "tick";

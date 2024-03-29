@@ -1,7 +1,10 @@
 assets/
 doc/
+!doc/.gdignore
+
 debug/
 target/
+
 Cargo.lock
 sqore_release.zip
 *.json
