@@ -1,5 +1,7 @@
 #! /usr/bin/bash
 
+read -p 'Bundle zip archive as well? y/n :]' do_bundle
+
 echo "Building artifacts for Sqore"
 
 spinner()
@@ -79,44 +81,6 @@ echo "   Done"
 ##
 ##
 
-# make folder
-echo "Making folders"
-mkdir addons
-mkdir addons/sqore
-mkdir addons/sqore/target
-mkdir addons/sqore/target/debug
-mkdir addons/sqore/target/release
-
-echo "Copying files over"
-
-# metadata
-cp README.md addons/sqore/README.md
-cp LICENSE addons/sqore/LICENSE
-cp sqore.gdextension addons/sqore/sqore.gdextension
-
-# Stage for zip archive
-
-# Windows libraries
-
-cp target/x86_64-pc-windows-gnu/debug/sqore.dll \
-    addons/sqore/target/debug/sqore.dll
-
-cp target/x86_64-pc-windows-gnu/release/sqore.dll \
-    addons/sqore/target/release/sqore.dll
-
-# Linux libraries
-cp target/x86_64-unknown-linux-gnu/debug/libsqore.so \
-    addons/sqore/target/debug/libsqore.so
-
-cp target/x86_64-unknown-linux-gnu/release/libsqore.so \
-    addons/sqore/target/release/libsqore.so
-
-# Mac libraries
-cp target/x86_64-apple-darwin/debug/libsqore.dylib \
-    addons/sqore/target/debug/libsqore.dylib
-
-cp target/x86_64-apple-darwin/release/libsqore.dylib \
-    addons/sqore/target/release/libsqore.dylib
 
 # Stage for local (using as a git submodule)
 
@@ -142,18 +106,61 @@ cp target/x86_64-apple-darwin/debug/libsqore.dylib \
 cp target/x86_64-apple-darwin/release/libsqore.dylib \
     target/release/libsqore.dylib
 
+if [ "$do_bundle" == 'y' ]; then
 
-echo "Copying folders over"
 
-# static files folders
-cp -r scenes addons/sqore/scenes/
-cp -r assets addons/sqore/assets/
-cp -r doc addons/sqore/doc
+	# make folder
+	echo "Making folders"
+	mkdir addons
+	mkdir addons/sqore
+	mkdir addons/sqore/target
+	mkdir addons/sqore/target/debug
+	mkdir addons/sqore/target/release
 
-echo "Creating zip archive"
-zip -r -q sqore_release addons && rm -r addons/
+	echo "Copying files over"
 
-echo "Your archive should be in this directory as 'sqore_release.zip'"
+	# metadata
+	cp README.md addons/sqore/README.md
+	cp LICENSE addons/sqore/LICENSE
+	cp sqore.gdextension addons/sqore/sqore.gdextension
+
+	# Stage for zip archive
+
+	# Windows libraries
+
+	cp target/x86_64-pc-windows-gnu/debug/sqore.dll \
+		addons/sqore/target/debug/sqore.dll
+
+	cp target/x86_64-pc-windows-gnu/release/sqore.dll \
+		addons/sqore/target/release/sqore.dll
+
+	# Linux libraries
+	cp target/x86_64-unknown-linux-gnu/debug/libsqore.so \
+		addons/sqore/target/debug/libsqore.so
+
+	cp target/x86_64-unknown-linux-gnu/release/libsqore.so \
+		addons/sqore/target/release/libsqore.so
+
+	# Mac libraries
+	cp target/x86_64-apple-darwin/debug/libsqore.dylib \
+		addons/sqore/target/debug/libsqore.dylib
+
+	cp target/x86_64-apple-darwin/release/libsqore.dylib \
+		addons/sqore/target/release/libsqore.dylib
+
+	echo "Copying folders over"
+	# static files folders
+	cp -r scenes addons/sqore/scenes/
+	cp -r assets addons/sqore/assets/
+	cp -r doc addons/sqore/doc
+
+	echo "Creating zip archive"
+	zip -r -q sqore_release addons && rm -r addons/
+	echo "Your archive should be in this directory as 'sqore_release.zip'"
+fi
+
+echo "Done building"
+
 
 
 
