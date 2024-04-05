@@ -6,6 +6,18 @@ doc/**
 # allowing binaries in git isn't a great fix in terms of usability. But it improves my workflow so I'm doing it
 target/**/*
 
+
+debug/
+Cargo.lock
+sqore_release.zip
+
+*.json
+.vscode
+**/*.import
+
+
+# Exception List
+
 ## allow debug binaries
 !target/debug/libsqore.so
 !target/debug/sqore.dll
@@ -15,12 +27,3 @@ target/**/*
 !target/release/libsqore.so
 !target/release/sqore.dll
 !target/release/libsqore.dylib
-
-
-debug/
-Cargo.lock
-sqore_release.zip
-
-*.json
-.vscode
-**/*.import
