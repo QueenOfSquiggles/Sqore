@@ -2,10 +2,12 @@ on:
   pull_request:
     branches: 
     - main
+    - reach
   workflow_dispatch:
   push:
     branches: 
     - main
+    - reach
 
 name: Continuous integration
 
