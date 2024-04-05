@@ -1,5 +1,5 @@
 //! # State Machines
-//! For Godot 4.2 earlier, you have to manually remember the functions "tick", "on_enter", and "on_exit" as those are the string name values that are checked for in the states.
+//! For Godot 4.2 earlier, you have to manually remember the functions "tick(delta:float)->void", "on_enter()->void", and "on_exit()->void" as those are the string name values that are checked for in the states.
 //! > From Godot 4.3+, support for virtual functions will have been reached which will allow a refactor that makes extending the base class functions significantly easier.
 //!
 //! For now just remember to keep your function names in order and everything should be fine
