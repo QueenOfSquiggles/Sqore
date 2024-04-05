@@ -1,10 +1,12 @@
 use godot::engine::{
-    EditorCommandPalette, EditorPlugin, IEditorPlugin, Os, PopupMenu, ProjectSettings,
+    EditorCommandPalette, EditorPlugin, Engine, IEditorPlugin, Os, PopupMenu, ProjectSettings,
 };
 use godot::prelude::*;
 
 use crate::scene::game_globals::Sqore;
 use crate::scene::serialization::SqoreSerialized;
+
+use super::templates_manager;
 
 #[derive(GodotClass)]
 #[class(tool, editor_plugin, init, base=EditorPlugin)]
@@ -17,6 +19,10 @@ struct SqoreEditorUtils {
 #[godot_api]
 impl IEditorPlugin for SqoreEditorUtils {
     fn enter_tree(&mut self) {
+        if Engine::singleton().is_editor_hint() {
+            templates_manager::load_templates();
+        }
+
         let mut menu = PopupMenu::new_alloc();
         menu.connect(
             StringName::from("id_pressed"),
@@ -54,7 +60,17 @@ impl IEditorPlugin for SqoreEditorUtils {
                 Ok(Variant::nil())
             }),
             &mut cmd,
-        )
+        );
+        self.register_tool_item(
+            "rebuild_sqore_templates",
+            "Writes out template files for GD scripts.",
+            Callable::from_fn("open_sqore_docs", |_| {
+                templates_manager::load_templates();
+
+                Ok(Variant::nil())
+            }),
+            &mut cmd,
+        );
     }
 
     fn exit_tree(&mut self) {}

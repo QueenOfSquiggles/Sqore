@@ -1,9 +1,23 @@
-# would including the docs be meaningful? Or maybe build them on remote? s
+# would including the docs be meaningful? Or maybe build them on remote?
 doc/**
 !doc/.gdignore
 
 debug/
 target/
+
+# allowing binaries in git isn't a great fix in terms of usability. But it improves my workflow so I'm doing it
+# allow debug binaries
+!target/debug/libsqore.so
+!target/debug/sqore.dll
+!target/debug/libsqore.dylib
+
+# allow release binaries
+!target/release/libsqore.so
+!target/release/sqore.dll
+!target/release/libsqore.dylib
+
+
+
 
 Cargo.lock
 sqore_release.zip
