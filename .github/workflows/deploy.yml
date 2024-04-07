@@ -146,6 +146,7 @@ jobs:
           cp -r scenes addons/sqore/scenes/
           cp -r assets addons/sqore/assets/
           zip -r -q sqore_release addons
+          ls -1
 
       - name: Make Release
         if: startsWith(github.ref, 'refs/tags/')
