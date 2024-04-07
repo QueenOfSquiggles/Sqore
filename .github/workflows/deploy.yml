@@ -15,12 +15,14 @@ permissions:
 
 jobs:
   check_tags:
-    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-    uses: reecetech/version-increment@2023.9.3
-    id: version
-    with:
-      scheme: semver
-      increment: patch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Version Increment
+        if: $(!startsWith(github.ref, 'refs/tags/'))
+        uses: reecetech/version-increment@2023.9.3      
+        with:
+          scheme: semver
+          increment: patch
   build:
     name: Build platform libs
     runs-on: ubuntu-latest
