@@ -103,6 +103,9 @@ jobs:
           path: $GITHUB_WORKSPACE
           # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
           pattern: "*sqore*"
+      - name: check files
+        run: |
+          ls | grep 'sqore'
           
           
     
