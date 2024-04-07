@@ -5,10 +5,10 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
-  workflow_run: # when CI passes (check && test && clippy), deploy
-    workflows: ["CI"]
-    types:
-      - completed
+  # workflow_run: # when CI passes (check && test && clippy), deploy
+  #   workflows: ["CI"]
+  #   types:
+  #     - completed
 
 permissions:
   contents: write
@@ -24,6 +24,7 @@ jobs:
           scheme: semver
           increment: patch
   build:
+    needs: check_tags
     name: Build platform libs
     runs-on: ubuntu-latest
 
