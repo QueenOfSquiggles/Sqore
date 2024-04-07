@@ -56,15 +56,17 @@ jobs:
           use-cross: true
           command: build
           args: --verbose --target ${{ matrix.target }}
+      - name: Working dir
+        shell: bash
+        run: pwd
       - name: Upload lib
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{ matrix.target }}
+          error: "Fail"
           path: "target/${{ matrix.target }}/${{matrix.type}}/*sqore.+(dylib|dll|so)"
+          overwrite: true
 
-      # - name: Build archive
-      #   shell: bash
-      #   run: echo "Theoretically done constructing?"
 
       # - name: Release
       #   uses: softprops/action-gh-release@v1
