@@ -1,3 +1,5 @@
+name: CI
+
 on: 
   pull_request:
     branches: 
@@ -9,7 +11,6 @@ on:
     - main
     - reach
 
-name: Continuous integration
 
 jobs:
   check:

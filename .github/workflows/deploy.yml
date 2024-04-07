@@ -1,15 +1,26 @@
-name: Deploy
+name: CD
 
 on:
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
+  workflow_run: # when CI passes (check && test && clippy), deploy
+    workflows: ["CI"]
+    types:
+      - completed
 
 permissions:
   contents: write
 
 jobs:
+  check_tags:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    uses: reecetech/version-increment@2023.9.3
+    id: version
+    with:
+      scheme: semver
+      increment: patch
   build:
     name: Build platform libs
     runs-on: ubuntu-latest
@@ -144,7 +155,7 @@ jobs:
           cp sqore.gdextension addons/sqore/sqore.gdextension
           cp -r scenes addons/sqore/scenes/
           cp -r assets addons/sqore/assets/
-          cp -r docs addons/sqore/docs/
+          cp -r doc addons/sqore/doc/
           zip -r -q sqore_release addons
           ls -1
 
