@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -45,16 +46,23 @@ jobs:
           # Make Rust compile to our target (defined in the matrix)
           targets: $\{\{ matrix.target \}\}
 
-      - name: Build
+      - name: Build Release
         uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
           args: --verbose --release --target $\{\{ matrix.target \}\}
 
+      - name: Build Debug
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --verbose --target $\{\{ matrix.target \}\}
+
       - name: Build archive
         shell: bash
-        run: ./build_release.sh
+        run: echo "Theoretically done constructing?"
 
       - name: Release
         uses: softprops/action-gh-release@v1
