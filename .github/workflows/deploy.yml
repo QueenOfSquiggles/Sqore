@@ -135,10 +135,10 @@ jobs:
       - name: move files
         run: | 
           for d in $(ls libs/debug/**/*sqore*); 
-            do cp $d /addons/sqore/target/debug/$(basename $d);
+            do cp $d addons/sqore/target/debug/
           done;
           for r in $(ls libs/release/**/*sqore*); 
-            do cp $r /addons/sqore/target/release/$(basename $r);
+            do cp $r addons/sqore/target/release/
           done;
           cp README.md addons/sqore/README.md
           cp LICENSE addons/sqore/LICENSE
