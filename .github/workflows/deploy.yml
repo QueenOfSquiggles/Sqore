@@ -98,10 +98,12 @@ jobs:
 
       - name: start package
         run: | 
-          echo "Hello there!"
-          mkdir target
-          mkdir target/debug
-          mkdir target/release
+          mkdir addons
+          mkdir addons/sqore
+          mkdir addons/sqore/target
+          mkdir addons/sqore/target/debug
+          mkdir addons/sqore/target/release
+          
           mkdir libs
           mkdir libs/debug
           mkdir libs/release
@@ -114,7 +116,7 @@ jobs:
         with:
           use-cross: false
           command: doc
-          args: --verbose --no-deps --target-dir .
+          args: --verbose --no-deps --target-dir addons/sqore/
 
       - name: download debug files
         uses: actions/download-artifact@v4.1.4
@@ -130,13 +132,19 @@ jobs:
           path: "libs/release/"
           # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
           pattern: "*sqore*--release"          
-      - name: move libs
+      - name: move files
         run: | 
           cp libs/debug/**/*sqore* target/debug/
           cp libs/release/**/*sqore* target/release/
+          cp README.md addons/sqore/README.md
+          cp LICENSE addons/sqore/LICENSE
+          cp sqore.gdextension addons/sqore/sqore.gdextension
+          cp -r scenes addons/sqore/scenes/
+          cp -r assets addons/sqore/assets/
+          zip -r -q sqore_release addons
 
-      # - name: Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: |
-      #       ./squiggles_core_release.zip
+      - name: Make Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: sqore_release.zip
