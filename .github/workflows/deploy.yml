@@ -5,10 +5,6 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
-  # workflow_run: # when CI passes (check && test && clippy), deploy
-  #   workflows: ["CI"]
-  #   types:
-  #     - completed
 
 permissions:
   contents: write
