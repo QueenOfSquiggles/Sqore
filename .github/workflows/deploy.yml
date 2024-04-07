@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{ matrix.target }}
-          path: "target/${{ matrix.target }}/${{matrix.type}}/*sqore+(dylib|dll|so)"
+          path: "target/${{ matrix.target }}/${{matrix.type}}/*sqore.+(dylib|dll|so)"
 
       # - name: Build archive
       #   shell: bash
