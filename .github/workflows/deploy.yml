@@ -22,31 +22,33 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             artifact: libsqore.so
             type: debug
+          
+          # temporarily disabling other platforms to speed iterations
 
-          # Debug mac
-          - target: x86_64-apple-darwin
-            artifact: libsqore.dylib
-            type: debug
+          # # Debug mac
+          # - target: x86_64-apple-darwin
+          #   artifact: libsqore.dylib
+          #   type: debug
 
-          # Debug Windows
-          - target: x86_64-pc-windows-gnu
-            artifact: sqore.dll
-            type: debug
+          # # Debug Windows
+          # - target: x86_64-pc-windows-gnu
+          #   artifact: sqore.dll
+          #   type: debug
 
-          # Release linux
-          - target: x86_64-unknown-linux-gnu
-            artifact: libsqore.so
-            type: release
+          # # Release linux
+          # - target: x86_64-unknown-linux-gnu
+          #   artifact: libsqore.so
+          #   type: release
 
-          # Release mac
-          - target: x86_64-apple-darwin
-            artifact: libsqore.dylib
-            type: release
+          # # Release mac
+          # - target: x86_64-apple-darwin
+          #   artifact: libsqore.dylib
+          #   type: release
 
-          # Release windows
-          - target: x86_64-pc-windows-gnu
-            artifact: sqore.dll
-            type: release
+          # # Release windows
+          # - target: x86_64-pc-windows-gnu
+          #   artifact: sqore.dll
+          #   type: release
 
     steps:
       - name: Checkout
