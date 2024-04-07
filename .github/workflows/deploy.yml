@@ -79,9 +79,14 @@ jobs:
           use-cross: true
           command: build
           args: --verbose --target ${{ matrix.target }}
+      
       - name: Working dir
         shell: bash
-        run: pwd
+        run: |
+          pwd
+          echo ""
+          ls -lah
+
       - name: Upload lib
         uses: actions/upload-artifact@v4.3.1
         with:
