@@ -63,10 +63,9 @@ jobs:
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{ matrix.target }}
-          error: "Fail"
+          if-no-files-found: error
           path: "target/${{ matrix.target }}/${{matrix.type}}/*sqore.+(dylib|dll|so)"
           overwrite: true
-
 
       # - name: Release
       #   uses: softprops/action-gh-release@v1
