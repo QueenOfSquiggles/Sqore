@@ -134,8 +134,12 @@ jobs:
           pattern: "*sqore*--release"          
       - name: move files
         run: | 
-          cp libs/debug/**/*sqore* target/debug/
-          cp libs/release/**/*sqore* target/release/
+          for d in $(ls libs/debug/**/*sqore*); 
+            do cp $d /addons/sqore/target/debug/$(basename $d);
+          done;
+          for r in $(ls libs/release/**/*sqore*); 
+            do cp $r /addons/sqore/target/release/$(basename $r);
+          done;
           cp README.md addons/sqore/README.md
           cp LICENSE addons/sqore/LICENSE
           cp sqore.gdextension addons/sqore/sqore.gdextension
