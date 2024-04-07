@@ -83,7 +83,7 @@ jobs:
       - name: Upload lib
         uses: actions/upload-artifact@v4.3.1
         with:
-          name: ${{ matrix.artifact }}:${{ matrix.type }}
+          name: ${{ matrix.artifact }}--${{ matrix.type }}
           if-no-files-found: error
           path: "target/${{ matrix.target }}/${{matrix.type}}/${{ matrix.artifact }}"
           overwrite: true
@@ -94,6 +94,16 @@ jobs:
       - name: relocate libs
         run: |
           echo "Hello there!"
+                  - name: Download a Build Artifact
+        
+      - name: check download file
+        uses: actions/download-artifact@v4.1.4
+        with:
+          # Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE
+          path: $GITHUB_WORKSPACE
+          # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
+          pattern: "*sqore*"
+          
           
     
 
