@@ -17,13 +17,36 @@ jobs:
     strategy:
       matrix:
         # You can add more, for any target you'd like!
-        target:
-          - x86_64-unknown-linux-gnu
-          - x86_64-apple-darwin
-          - x86_64-pc-windows-gnu
-        type:
-          - debug
-          - release
+        include:
+          # Debug linux
+          - target: x86_64-unknown-linux-gnu
+            artifact: libsqore.so
+            type: debug
+
+          # Debug mac
+          - target: x86_64-apple-darwin
+            artifact: libsqore.dylib
+            type: debug
+
+          # Debug Windows
+          - target: x86_64-pc-windows-gnu
+            artifact: sqore.dll
+            type: debug
+
+          # Release linux
+          - target: x86_64-unknown-linux-gnu
+            artifact: libsqore.so
+            type: release
+
+          # Release mac
+          - target: x86_64-apple-darwin
+            artifact: libsqore.dylib
+            type: release
+
+          # Release windows
+          - target: x86_64-pc-windows-gnu
+            artifact: sqore.dll
+            type: release
 
     steps:
       - name: Checkout
@@ -64,7 +87,7 @@ jobs:
         with:
           name: ${{ matrix.target }}
           if-no-files-found: error
-          path: "target/${{ matrix.target }}/${{matrix.type}}/*sqore.+(dylib|dll|so)"
+          path: "target/${{ matrix.target }}/${{matrix.type}}/${{ matrix.artifact }}"
           overwrite: true
 
       # - name: Release
