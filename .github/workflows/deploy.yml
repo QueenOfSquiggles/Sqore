@@ -105,7 +105,10 @@ jobs:
           mkdir libs
           mkdir libs/debug
           mkdir libs/release
-        
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Build docs
         uses: actions-rs/cargo@v1
         with:
