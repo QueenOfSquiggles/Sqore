@@ -99,22 +99,36 @@ jobs:
           mkdir target
           mkdir target/debug
           mkdir target/release
+          mkdir libs
+          mkdir libs/debug
+          mkdir libs/release
         
+      - name: Build docs
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: false
+          command: doc
+          args: --verbose --no-deps --target-dir .
+
       - name: download debug files
         uses: actions/download-artifact@v4.1.4
         with:
           # Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE
-          path: "target/debug/"
+          path: "libs/debug/"
           # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
           pattern: "*sqore*--debug"
       - name: download release files
         uses: actions/download-artifact@v4.1.4
         with:
           # Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE
-          path: "target/release/"
+          path: "libs/release/"
           # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
           pattern: "*sqore*--release"          
-    
+      - name: move libs
+        run: | 
+          cp libs/debug/**/*sqore* target/debug/
+          cp libs/release/**/*sqore* target/release/
+
       # - name: Release
       #   uses: softprops/action-gh-release@v1
       #   with:
