@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and upload
+    name: Build platform libs
     runs-on: ubuntu-latest
 
     strategy:
@@ -91,18 +91,17 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: relocate libs
-        run: |
-          echo "Hello there!"
-                  - name: Download a Build Artifact
+      - name: start package
+        run: echo "Hello there!"
         
-      - name: check download file
+      - name: download files
         uses: actions/download-artifact@v4.1.4
         with:
           # Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE
           path: $GITHUB_WORKSPACE
           # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
           pattern: "*sqore*"
+
       - name: check files
         run: |
           ls | grep 'sqore'
