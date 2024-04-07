@@ -1,2 +1,3 @@
 [target.x86_64-apple-darwin]
+# In my limited experience, this is probably the most resiliant macos image
 image = "docker.io/idhyt/cross-rs-x86_64-apple-darwin:rustc-1.71"
