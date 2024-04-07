@@ -23,32 +23,31 @@ jobs:
             artifact: libsqore.so
             type: debug
           
-          # temporarily disabling other platforms to speed iterations
 
-          # # Debug mac
-          # - target: x86_64-apple-darwin
-          #   artifact: libsqore.dylib
-          #   type: debug
+          # Debug mac
+          - target: x86_64-apple-darwin
+            artifact: libsqore.dylib
+            type: debug
 
-          # # Debug Windows
-          # - target: x86_64-pc-windows-gnu
-          #   artifact: sqore.dll
-          #   type: debug
+          # Debug Windows
+          - target: x86_64-pc-windows-gnu
+            artifact: sqore.dll
+            type: debug
 
           # Release linux
           - target: x86_64-unknown-linux-gnu
             artifact: libsqore.so
             type: release
 
-          # # Release mac
-          # - target: x86_64-apple-darwin
-          #   artifact: libsqore.dylib
-          #   type: release
+          # Release mac
+          - target: x86_64-apple-darwin
+            artifact: libsqore.dylib
+            type: release
 
-          # # Release windows
-          # - target: x86_64-pc-windows-gnu
-          #   artifact: sqore.dll
-          #   type: release
+          # Release windows
+          - target: x86_64-pc-windows-gnu
+            artifact: sqore.dll
+            type: release
 
     steps:
       - name: Checkout
@@ -116,7 +115,7 @@ jobs:
         with:
           use-cross: false
           command: doc
-          args: --verbose --no-deps --target-dir addons/sqore/
+          args: --verbose --no-deps --target-dir .
 
       - name: download debug files
         uses: actions/download-artifact@v4.1.4
@@ -145,6 +144,7 @@ jobs:
           cp sqore.gdextension addons/sqore/sqore.gdextension
           cp -r scenes addons/sqore/scenes/
           cp -r assets addons/sqore/assets/
+          cp -r docs addons/sqore/docs/
           zip -r -q sqore_release addons
           ls -1
 

@@ -1,4 +1,5 @@
 [![Rust Build and Test](https://github.com/QueenOfSquiggles/Squiggles-Core/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/QueenOfSquiggles/Squiggles-Core/actions/workflows/rust.yml)
+[![Deploy](https://github.com/QueenOfSquiggles/Sqore/actions/workflows/deploy.yml/badge.svg)](https://github.com/QueenOfSquiggles/Sqore/actions/workflows/deploy.yml)
 
 # Sqore (formerly Squiggles-Core)
 An opinionated utility library for making 3D games in Godot 4.2 written in rust.
