@@ -57,12 +57,12 @@ jobs:
           command: build
           args: --verbose --target ${{ matrix.target }}
 
-      - name: Build archive
-        shell: bash
-        run: echo "Theoretically done constructing?"
+      # - name: Build archive
+      #   shell: bash
+      #   run: echo "Theoretically done constructing?"
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ./squiggles_core_release.zip
+      # - name: Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       ./squiggles_core_release.zip
